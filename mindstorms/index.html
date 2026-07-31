@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#0e0f13">
-<title>MINDSTORMS 51515 리모컨</title>
+<title>마인드스톰 주행컨트롤러</title>
 <style>
   :root {
     --bg: #0e0f13;
@@ -154,6 +154,47 @@
   .toggle input:checked + .track::after { transform:translateX(20px); }
   input[type=range] { width:100%; accent-color:var(--accent); }
   .hint { font-size:11.5px; color:var(--muted); line-height:1.5; }
+
+  /* Hero robot */
+  .hero {
+    background: linear-gradient(180deg, var(--surface) 0%, rgba(23,25,33,0.4) 100%);
+    border:1px solid var(--line); border-radius:18px; padding:6px 10px 12px;
+    display:flex; flex-direction:column; align-items:center; gap:4px; box-shadow:var(--shadow);
+  }
+  .hero svg { width:min(70vw, 260px); height:auto; display:block; }
+  .hero .cap { font-size:12px; color:var(--muted); font-weight:600; }
+  .hero .cap b { color:var(--accent); }
+
+  /* Assembly guide */
+  .guide { background:var(--surface); border:1px solid var(--line); border-radius:14px; overflow:hidden; }
+  .guide > summary {
+    list-style:none; cursor:pointer; padding:14px 16px; font-weight:700; font-size:14px;
+    display:flex; align-items:center; gap:8px;
+  }
+  .guide > summary::-webkit-details-marker { display:none; }
+  .guide > summary::after { content:"▾"; margin-left:auto; color:var(--muted); transition:transform .2s; }
+  .guide[open] > summary::after { transform:rotate(180deg); }
+  .guide-body { padding:0 16px 16px; }
+  ol.steps { list-style:none; counter-reset:s; display:flex; flex-direction:column; gap:12px; }
+  ol.steps > li { counter-increment:s; position:relative; padding-left:38px; font-size:13px; line-height:1.6; color:var(--text); }
+  ol.steps > li::before {
+    content:counter(s); position:absolute; left:0; top:-1px; width:26px; height:26px;
+    background:var(--accent); color:#fff; border-radius:50%; display:grid; place-items:center;
+    font-weight:800; font-size:13px;
+  }
+  ol.steps b { color:#fff; }
+  ol.steps .port { display:inline-block; min-width:20px; text-align:center; background:var(--surface-2); border:1px solid var(--line); border-radius:6px; padding:0 6px; font-weight:800; color:var(--accent); }
+  .guide-body a { color:var(--accent-2); }
+
+  /* Detected ports */
+  .detect { display:flex; align-items:center; gap:8px; flex-wrap:wrap; font-size:12.5px; padding:2px 2px 2px; }
+  .detect .chip { background:var(--surface-2); border:1px solid var(--line); border-radius:8px; padding:4px 9px; font-weight:700; font-size:12px; }
+  .detect .chip.motor { border-color:var(--accent); color:var(--accent); }
+  .detect .muted { color:var(--muted); }
+  .seg button.detected { box-shadow: inset 0 0 0 2px var(--accent-2); }
+  .seg button.detected::after { content:"●"; font-size:8px; color:var(--accent-2); position:relative; top:-7px; left:2px; }
+  .btn-auto { align-self:flex-start; background:var(--surface-2); color:var(--accent-2); border:1px solid rgba(46,230,166,0.4); padding:9px 14px; font-size:13px; border-radius:10px; }
+
   footer { text-align:center; font-size:11px; color:var(--muted); padding:6px 0 14px; }
   footer a { color:var(--muted); }
 </style>
@@ -162,13 +203,61 @@
 <header>
   <div class="logo">🤖</div>
   <div>
-    <h1>MINDSTORMS 51515 리모컨</h1>
-    <p>Robot Inventor · Web Bluetooth 주행 컨트롤러</p>
+    <h1>마인드스톰 주행컨트롤러</h1>
+    <p>LEGO® MINDSTORMS® 51515 · Web Bluetooth</p>
   </div>
   <div class="status" id="status"><span class="dot"></span><span id="statusText">연결 안 됨</span></div>
 </header>
 
 <main>
+  <div class="hero">
+    <svg viewBox="0 0 320 220" role="img" aria-label="마인드스톰 51515 주행 로봇">
+      <ellipse cx="160" cy="202" rx="112" ry="13" fill="rgba(0,0,0,0.35)"/>
+      <!-- 거리 센서 모듈 -->
+      <rect x="128" y="40" width="64" height="22" rx="9" fill="var(--surface-2)" stroke="rgba(255,255,255,0.14)" stroke-width="2"/>
+      <circle cx="146" cy="51" r="6.5" fill="#0c0d11" stroke="var(--accent-2)" stroke-width="2"/>
+      <circle cx="174" cy="51" r="6.5" fill="#0c0d11" stroke="var(--accent-2)" stroke-width="2"/>
+      <!-- 바퀴 (왼/오 구동 모터) -->
+      <g>
+        <circle cx="56" cy="140" r="46" fill="#0c0d11" stroke="rgba(255,255,255,0.18)" stroke-width="3"/>
+        <circle cx="56" cy="140" r="45" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="7" stroke-dasharray="4 9"/>
+        <circle cx="56" cy="140" r="26" fill="var(--surface-2)"/>
+        <circle cx="56" cy="140" r="10" fill="var(--accent)"/>
+      </g>
+      <g>
+        <circle cx="264" cy="140" r="46" fill="#0c0d11" stroke="rgba(255,255,255,0.18)" stroke-width="3"/>
+        <circle cx="264" cy="140" r="45" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="7" stroke-dasharray="4 9"/>
+        <circle cx="264" cy="140" r="26" fill="var(--surface-2)"/>
+        <circle cx="264" cy="140" r="10" fill="var(--accent)"/>
+      </g>
+      <!-- 허브 본체 -->
+      <rect x="78" y="58" width="164" height="108" rx="20" fill="var(--surface-2)" stroke="rgba(255,255,255,0.14)" stroke-width="2"/>
+      <rect x="90" y="68" width="140" height="88" rx="12" fill="#0e0f13"/>
+      <!-- 5x5 LED 매트릭스: 전진 화살표 -->
+      <g fill="rgba(255,255,255,0.10)">
+        <circle cx="104" cy="82" r="5"/><circle cx="128" cy="82" r="5"/><circle cx="152" cy="82" r="5" fill="var(--accent)"/><circle cx="176" cy="82" r="5"/><circle cx="200" cy="82" r="5"/>
+        <circle cx="104" cy="98" r="5"/><circle cx="128" cy="98" r="5" fill="var(--accent)"/><circle cx="152" cy="98" r="5" fill="var(--accent)"/><circle cx="176" cy="98" r="5" fill="var(--accent)"/><circle cx="200" cy="98" r="5"/>
+        <circle cx="104" cy="114" r="5" fill="var(--accent)"/><circle cx="128" cy="114" r="5" fill="var(--accent)"/><circle cx="152" cy="114" r="5" fill="var(--accent)"/><circle cx="176" cy="114" r="5" fill="var(--accent)"/><circle cx="200" cy="114" r="5" fill="var(--accent)"/>
+        <circle cx="104" cy="130" r="5"/><circle cx="128" cy="130" r="5"/><circle cx="152" cy="130" r="5" fill="var(--accent)"/><circle cx="176" cy="130" r="5"/><circle cx="200" cy="130" r="5"/>
+        <circle cx="104" cy="146" r="5"/><circle cx="128" cy="146" r="5"/><circle cx="152" cy="146" r="5" fill="var(--accent)"/><circle cx="176" cy="146" r="5"/><circle cx="200" cy="146" r="5"/>
+      </g>
+    </svg>
+    <div class="cap">LEGO® <b>51515</b> 주행 베이스 · 바퀴 구동 모터 2개로 주행</div>
+  </div>
+
+  <details class="guide" open>
+    <summary>🧱 조립하고 주행 시작하기</summary>
+    <div class="guide-body">
+      <ol class="steps">
+        <li><b>주행 모델 조립.</b> LEGO MINDSTORMS 앱(또는 종이 설명서)의 51515 모델 중 바퀴로 달리는 모델을 만드세요. 추천: <b>Tricky</b>(바퀴 주행)나 <b>MVP</b>(자동차). 핵심은 <b>좌·우 바퀴를 굴리는 모터 2개</b>입니다.</li>
+        <li><b>모터를 허브에 연결.</b> 두 구동 모터를 아무 포트에나 꽂으세요. 예) 왼쪽 바퀴 → <span class="port">A</span>, 오른쪽 바퀴 → <span class="port">E</span>. 포트는 앱에서 언제든 바꿀 수 있습니다.</li>
+        <li><b>허브 켜고 연결.</b> 허브 가운데 버튼으로 전원을 켜고(LEGO 앱 등 다른 기기와는 연결 해제), 아래 <b>‘허브 연결’</b>을 누르세요.</li>
+        <li><b>포트 자동 감지.</b> 연결되면 어느 포트에 모터가 꽂혔는지 자동으로 표시됩니다. <b>‘감지된 모터로 자동 설정’</b>을 누르면 좌·우 포트가 채워집니다.</li>
+        <li><b>주행!</b> 조이스틱을 드래그해 운전하세요. 앞으로 가야 하는데 회전만 하면 설정에서 <b>방향 반전</b> 토글을 바꾸면 됩니다.</li>
+      </ol>
+    </div>
+  </details>
+
   <div class="banner" id="iosBanner">
     <b>아이폰 / 아이패드 사용자</b><br>
     iOS Safari·크롬은 Web Bluetooth를 지원하지 않습니다. App Store에서 <b>Bluefy</b>(무료)를 설치하고,
@@ -176,6 +265,11 @@
   </div>
 
   <button class="btn btn-primary" id="connectBtn">🔗 허브 연결</button>
+
+  <div class="detect" id="detect" style="display:none;">
+    <span class="muted">감지된 포트:</span>
+    <span id="detectChips"><span class="muted">—</span></span>
+  </div>
 
   <div class="pad-wrap">
     <div class="pad" id="pad">
@@ -207,6 +301,7 @@
   <details class="settings">
     <summary>⚙️ 설정 (모터 포트 · 속도)</summary>
     <div class="settings-body">
+      <button class="btn-auto" id="autoBtn" disabled>🔍 감지된 모터로 자동 설정</button>
       <div class="field">
         <label>왼쪽 모터 포트</label>
         <div class="seg" id="leftPortSeg"></div>
@@ -247,6 +342,19 @@
 const LWP3_SERVICE = "00001623-1212-efde-1623-785feabcd123";
 const LWP3_CHAR    = "00001624-1212-efde-1623-785feabcd123";
 const PORTS = { A:0, B:1, C:2, D:3, E:4, F:5 };
+const PORT_LETTERS = ["A","B","C","D","E","F"];
+
+/* LWP3 I/O device type IDs (source: pybricks/technical-info assigned-numbers) */
+const DEV_NAMES = {
+  46:"라지 모터", 47:"XL 모터", 48:"미디엄 모터", 49:"라지 모터", 65:"스몰 모터",
+  75:"미디엄 모터", 76:"라지 모터",
+  61:"컬러 센서", 62:"거리 센서", 63:"포스 센서", 64:"LED 매트릭스",
+};
+const MOTOR_IDS = new Set([1, 2, 38, 46, 47, 48, 49, 65, 75, 76]);
+function deviceInfo(typeId) {
+  return { name: DEV_NAMES[typeId] || ("기기 #" + typeId), isMotor: MOTOR_IDS.has(typeId) };
+}
+let detected = {};   // { A: {typeId, name, isMotor}, ... }
 
 let device = null, characteristic = null;
 let canWriteNoResp = false;
@@ -272,7 +380,8 @@ const pad = $("pad"), knob = $("knob"), padHint = $("padHint");
 const leftVal=$("leftVal"), rightVal=$("rightVal"), leftBar=$("leftBar"), rightBar=$("rightBar");
 
 /* ── Build port selectors ── */
-function buildSeg(container, current, onPick) {
+const segBtns = { left:{}, right:{} };
+function buildSeg(container, side, current, onPick) {
   container.innerHTML = "";
   for (const p of Object.keys(PORTS)) {
     const b = document.createElement("button");
@@ -283,14 +392,52 @@ function buildSeg(container, current, onPick) {
       b.classList.add("sel");
       onPick(p);
     };
+    segBtns[side][p] = b;
     container.appendChild(b);
   }
 }
-buildSeg($("leftPortSeg"), cfg.leftPort, p => cfg.leftPort = p);
-buildSeg($("rightPortSeg"), cfg.rightPort, p => cfg.rightPort = p);
+function selectSeg(side, port) {
+  Object.entries(segBtns[side]).forEach(([p,b]) => b.classList.toggle("sel", p===port));
+}
+buildSeg($("leftPortSeg"),  "left",  cfg.leftPort,  p => cfg.leftPort = p);
+buildSeg($("rightPortSeg"), "right", cfg.rightPort, p => cfg.rightPort = p);
 $("invLeft").onchange  = e => cfg.invLeft  = e.target.checked;
 $("invRight").onchange = e => cfg.invRight = e.target.checked;
 $("maxSpeed").oninput  = e => { cfg.maxSpeed = +e.target.value; $("maxSpeedLabel").textContent = e.target.value; };
+
+/* ── Detected-port UI ── */
+const detectEl = $("detect"), detectChips = $("detectChips"), autoBtn = $("autoBtn");
+function detectedMotorPorts() {
+  return PORT_LETTERS.filter(p => detected[p] && detected[p].isMotor);
+}
+function updateDetectedUI() {
+  const ports = PORT_LETTERS.filter(p => detected[p]);
+  detectEl.style.display = connected ? "flex" : "none";
+  if (ports.length === 0) {
+    detectChips.innerHTML = '<span class="muted">모터를 찾는 중…</span>';
+  } else {
+    detectChips.innerHTML = ports.map(p => {
+      const d = detected[p];
+      return `<span class="chip ${d.isMotor?'motor':''}">${p} · ${d.name}</span>`;
+    }).join("");
+  }
+  // highlight detected motor ports in the selectors
+  for (const side of ["left","right"]) {
+    for (const p of PORT_LETTERS) {
+      const b = segBtns[side][p];
+      if (b) b.classList.toggle("detected", !!(detected[p] && detected[p].isMotor));
+    }
+  }
+  autoBtn.disabled = detectedMotorPorts().length < 2;
+}
+autoBtn.onclick = () => {
+  const m = detectedMotorPorts();
+  if (m.length < 2) return;
+  cfg.leftPort = m[0];  selectSeg("left",  m[0]);
+  cfg.rightPort = m[1]; selectSeg("right", m[1]);
+  autoBtn.textContent = `✅ 왼쪽 ${m[0]} · 오른쪽 ${m[1]}`;
+  setTimeout(() => autoBtn.textContent = "🔍 감지된 모터로 자동 설정", 2500);
+};
 
 /* ── Hide iOS banner where Web Bluetooth exists (Bluefy, Chrome, etc.) ── */
 if (navigator.bluetooth) $("iosBanner").classList.add("hidden");
@@ -332,11 +479,14 @@ async function connect() {
     const service = await server.getPrimaryService(LWP3_SERVICE);
     characteristic = await service.getCharacteristic(LWP3_CHAR);
     canWriteNoResp = !!characteristic.properties.writeWithoutResponse;
+    detected = {};
+    characteristic.addEventListener("characteristicvaluechanged", onNotify);
     try { await characteristic.startNotifications(); } catch(e){}
     connected = true;
     setStatus(device.name || "허브 연결됨", true);
     connectBtn.textContent = "🔌 연결 해제";
     padHint.textContent = "스틱을 드래그해 주행하세요 · 놓으면 정지";
+    updateDetectedUI();
   } catch (e) {
     if (e && e.name === "NotFoundError") { setStatus("연결 안 됨", false); return; } // user cancelled
     console.error(e);
@@ -349,10 +499,30 @@ async function connect() {
 function onDisconnected() {
   connected = false; characteristic = null;
   want = {left:0,right:0}; sent = {left:null,right:null};
+  detected = {};
   updateTelemetry(0,0);
+  updateDetectedUI();
   setStatus("연결 끊김", false);
   connectBtn.textContent = "🔗 허브 연결";
   resetKnob();
+}
+
+/* ── Parse LWP3 notifications: Hub Attached I/O (0x04) → which ports have motors ──
+   [len, hubId, 0x04, portId, event, ...]  event 0x01/0x02=attached, 0x00=detached
+   attached payload bytes 5-6 = I/O type id (uint16 LE)                              */
+function onNotify(e) {
+  const d = new Uint8Array(e.target.value.buffer);
+  if (d.length < 5 || d[2] !== 0x04) return;
+  const letter = PORT_LETTERS[d[3]];
+  if (!letter) return;
+  const event = d[4];
+  if (event === 0x00) {
+    delete detected[letter];
+  } else if (d.length >= 7) {
+    const typeId = d[5] | (d[6] << 8);
+    detected[letter] = { typeId, ...deviceInfo(typeId) };
+  }
+  updateDetectedUI();
 }
 
 async function disconnect() {
