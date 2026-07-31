@@ -79,38 +79,110 @@
   .btn-row { display:flex; gap:10px; }
   .btn-row .btn { flex:1; }
 
-  /* Joystick */
-  .pad-wrap { display:flex; flex-direction:column; align-items:center; gap:10px; margin-top:2px; }
+  /* ── Nintendo-style gamepad ── */
+  .gamepad {
+    background: linear-gradient(180deg, #23252f 0%, #191b22 100%);
+    border:1px solid var(--line); border-radius:26px;
+    padding:14px 16px 16px; box-shadow: var(--shadow), inset 0 1px 0 rgba(255,255,255,0.05);
+  }
+  .shoulders { display:flex; justify-content:space-between; gap:10px; margin-bottom:12px; }
+  .shoulder {
+    flex:1; border:none; border-radius:14px 14px 8px 8px; cursor:pointer;
+    background: linear-gradient(180deg,#3a3d49,#2a2c36); color:var(--text);
+    font-weight:700; font-size:12.5px; padding:10px 8px; font-family:inherit;
+    box-shadow:0 3px 0 #15161c; touch-action:none; user-select:none; -webkit-user-select:none;
+  }
+  .shoulder.press { transform:translateY(2px); box-shadow:0 1px 0 #15161c; background:linear-gradient(180deg,var(--accent),#ff7a3d); color:#fff; }
+
+  .pad-main { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+  .cluster { display:flex; flex-direction:column; align-items:center; gap:12px; }
+  .cluster.center { gap:10px; }
+
+  /* analog stick */
   .pad {
-    position:relative; width:min(74vw, 300px); aspect-ratio:1;
+    position:relative; width:clamp(96px,30vw,132px); aspect-ratio:1;
     border-radius:50%; touch-action:none;
-    background:
-      radial-gradient(circle at 50% 50%, var(--surface-2) 0%, var(--surface) 70%),
-      var(--surface);
+    background: radial-gradient(circle at 50% 40%, #34373f 0%, #202229 72%);
     border:1px solid var(--line);
-    box-shadow: inset 0 0 40px rgba(0,0,0,0.5), var(--shadow);
-    display:grid; place-items:center; overflow:hidden;
+    box-shadow: inset 0 3px 10px rgba(0,0,0,0.6), inset 0 -2px 6px rgba(255,255,255,0.04);
+    display:grid; place-items:center; overflow:hidden; flex:none;
   }
-  .pad::before, .pad::after {
-    content:""; position:absolute; background:var(--line);
-  }
-  .pad::before { width:100%; height:1px; }
-  .pad::after { height:100%; width:1px; }
-  .pad .cross { position:absolute; inset:0; pointer-events:none; }
-  .pad .arrow { position:absolute; color:var(--muted); font-size:16px; font-weight:700; opacity:.6; }
-  .arrow.up{top:12px;left:50%;transform:translateX(-50%);}
-  .arrow.down{bottom:12px;left:50%;transform:translateX(-50%);}
-  .arrow.left{left:14px;top:50%;transform:translateY(-50%);}
-  .arrow.right{right:14px;top:50%;transform:translateY(-50%);}
+  .pad .arrow { position:absolute; color:var(--muted); font-size:11px; opacity:.4; pointer-events:none; }
+  .arrow.up{top:7px;left:50%;transform:translateX(-50%);}
+  .arrow.down{bottom:7px;left:50%;transform:translateX(-50%);}
+  .arrow.left{left:8px;top:50%;transform:translateY(-50%);}
+  .arrow.right{right:8px;top:50%;transform:translateY(-50%);}
   .knob {
-    position:relative; z-index:2; width:34%; aspect-ratio:1; border-radius:50%;
-    background: linear-gradient(135deg, var(--accent), #ff8f52);
-    box-shadow: 0 8px 22px rgba(255,90,31,0.45), inset 0 2px 4px rgba(255,255,255,0.35);
-    transition: transform .05s ease-out;
-    display:grid; place-items:center; color:rgba(0,0,0,0.5); font-size:20px;
-    will-change: transform;
+    position:relative; z-index:2; width:52%; aspect-ratio:1; border-radius:50%;
+    background: radial-gradient(circle at 50% 35%, #4a4d58 0%, #23252d 75%);
+    border:1px solid rgba(255,255,255,0.10);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5), inset 0 2px 3px rgba(255,255,255,0.12);
+    transition: transform .06s ease-out; will-change:transform;
   }
   .pad.dragging .knob { transition:none; }
+
+  /* D-pad */
+  .dpad { display:grid; grid-template-columns:repeat(3,1fr); grid-template-rows:repeat(3,1fr);
+    width:clamp(96px,30vw,126px); aspect-ratio:1; gap:3px; }
+  .dpad .d {
+    border:none; background:linear-gradient(180deg,#33353f,#25272f); color:var(--text);
+    font-size:12px; cursor:pointer; box-shadow:0 2px 0 #14151a; touch-action:none;
+    user-select:none; -webkit-user-select:none; display:grid; place-items:center;
+  }
+  .dpad .up{grid-area:1/2;border-radius:8px 8px 0 0;}
+  .dpad .left{grid-area:2/1;border-radius:8px 0 0 8px;}
+  .dpad .mid{grid-area:2/2;background:#25272f;box-shadow:none;}
+  .dpad .right{grid-area:2/3;border-radius:0 8px 8px 0;}
+  .dpad .down{grid-area:3/2;border-radius:0 0 8px 8px;}
+  .dpad .d.press{background:linear-gradient(180deg,var(--accent),#ff7a3d);color:#fff;transform:translateY(1px);}
+
+  /* face buttons A/B/X/Y */
+  .face { position:relative; display:grid; grid-template-columns:repeat(3,1fr); grid-template-rows:repeat(3,1fr);
+    width:clamp(120px,38vw,150px); aspect-ratio:1; gap:4px; }
+  .fbtn {
+    border:none; border-radius:50%; color:#fff; font-weight:800; font-size:clamp(15px,4.5vw,19px);
+    cursor:pointer; font-family:inherit; touch-action:none; user-select:none; -webkit-user-select:none;
+    box-shadow:0 3px 0 rgba(0,0,0,0.45), inset 0 2px 3px rgba(255,255,255,0.25);
+  }
+  .fbtn.press { transform:translateY(2px); box-shadow:0 1px 0 rgba(0,0,0,0.45), inset 0 2px 6px rgba(0,0,0,0.3); filter:brightness(1.15); }
+  .fbtn.x{grid-area:1/2;background:#0a9ac9;}   /* top  · 후진 */
+  .fbtn.y{grid-area:2/1;background:#12a150;}   /* left · 전진 */
+  .fbtn.a{grid-area:2/3;background:#e60012;}   /* right· 부스트 */
+  .fbtn.b{grid-area:3/2;background:#f2c200;color:#3a2e00;} /* bottom· 정지 */
+
+  /* center screen + minus/plus */
+  .screen {
+    width:clamp(78px,24vw,104px); aspect-ratio:4/3; border-radius:10px;
+    background:linear-gradient(180deg,#0c1512,#0a0f0d); border:1px solid rgba(46,230,166,0.25);
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px;
+    box-shadow:inset 0 0 14px rgba(0,0,0,0.7);
+  }
+  .scr-model { font-size:12px; font-weight:800; color:var(--accent-2); letter-spacing:.3px; text-align:center; }
+  .scr-speed { font-size:20px; font-weight:800; color:var(--accent-2); font-variant-numeric:tabular-nums; }
+  .scr-speed small { font-size:11px; }
+  .minus-plus { display:flex; gap:14px; }
+  .minus-plus button {
+    width:34px; height:34px; border-radius:50%; border:1px solid var(--line);
+    background:#2a2c36; color:var(--text); font-size:18px; font-weight:800; cursor:pointer;
+    display:grid; place-items:center; touch-action:manipulation;
+  }
+  .minus-plus button:active { background:var(--accent); color:#fff; }
+  .gamepad .hint { text-align:center; margin-top:12px; }
+  .gamepad .hint b { color:var(--text); }
+
+  /* model selector */
+  .model-stage { width:100%; display:grid; place-items:center; padding:4px 0 2px; }
+  .model-img { width:min(62vw,230px); height:auto; max-height:210px; object-fit:contain;
+    filter:drop-shadow(0 12px 18px rgba(0,0,0,0.5)); }
+  .modes { display:flex; gap:8px; flex-wrap:wrap; justify-content:center; margin-top:8px; }
+  .mode-chip {
+    border:1px solid var(--line); background:var(--surface-2); border-radius:12px; padding:5px;
+    cursor:pointer; width:60px; display:flex; flex-direction:column; align-items:center; gap:3px;
+  }
+  .mode-chip img { width:44px; height:44px; object-fit:contain; }
+  .mode-chip span { font-size:10px; font-weight:700; color:var(--muted); }
+  .mode-chip.sel { border-color:var(--accent); background:rgba(255,90,31,0.10); }
+  .mode-chip.sel span { color:var(--accent); }
 
   .telemetry { display:flex; gap:10px; }
   .tcard { flex:1; background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:12px 14px; }
@@ -211,49 +283,22 @@
 
 <main>
   <div class="hero">
-    <svg viewBox="0 0 320 220" role="img" aria-label="마인드스톰 51515 주행 로봇">
-      <ellipse cx="160" cy="202" rx="112" ry="13" fill="rgba(0,0,0,0.35)"/>
-      <!-- 거리 센서 모듈 -->
-      <rect x="128" y="40" width="64" height="22" rx="9" fill="var(--surface-2)" stroke="rgba(255,255,255,0.14)" stroke-width="2"/>
-      <circle cx="146" cy="51" r="6.5" fill="#0c0d11" stroke="var(--accent-2)" stroke-width="2"/>
-      <circle cx="174" cy="51" r="6.5" fill="#0c0d11" stroke="var(--accent-2)" stroke-width="2"/>
-      <!-- 바퀴 (왼/오 구동 모터) -->
-      <g>
-        <circle cx="56" cy="140" r="46" fill="#0c0d11" stroke="rgba(255,255,255,0.18)" stroke-width="3"/>
-        <circle cx="56" cy="140" r="45" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="7" stroke-dasharray="4 9"/>
-        <circle cx="56" cy="140" r="26" fill="var(--surface-2)"/>
-        <circle cx="56" cy="140" r="10" fill="var(--accent)"/>
-      </g>
-      <g>
-        <circle cx="264" cy="140" r="46" fill="#0c0d11" stroke="rgba(255,255,255,0.18)" stroke-width="3"/>
-        <circle cx="264" cy="140" r="45" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="7" stroke-dasharray="4 9"/>
-        <circle cx="264" cy="140" r="26" fill="var(--surface-2)"/>
-        <circle cx="264" cy="140" r="10" fill="var(--accent)"/>
-      </g>
-      <!-- 허브 본체 -->
-      <rect x="78" y="58" width="164" height="108" rx="20" fill="var(--surface-2)" stroke="rgba(255,255,255,0.14)" stroke-width="2"/>
-      <rect x="90" y="68" width="140" height="88" rx="12" fill="#0e0f13"/>
-      <!-- 5x5 LED 매트릭스: 전진 화살표 -->
-      <g fill="rgba(255,255,255,0.10)">
-        <circle cx="104" cy="82" r="5"/><circle cx="128" cy="82" r="5"/><circle cx="152" cy="82" r="5" fill="var(--accent)"/><circle cx="176" cy="82" r="5"/><circle cx="200" cy="82" r="5"/>
-        <circle cx="104" cy="98" r="5"/><circle cx="128" cy="98" r="5" fill="var(--accent)"/><circle cx="152" cy="98" r="5" fill="var(--accent)"/><circle cx="176" cy="98" r="5" fill="var(--accent)"/><circle cx="200" cy="98" r="5"/>
-        <circle cx="104" cy="114" r="5" fill="var(--accent)"/><circle cx="128" cy="114" r="5" fill="var(--accent)"/><circle cx="152" cy="114" r="5" fill="var(--accent)"/><circle cx="176" cy="114" r="5" fill="var(--accent)"/><circle cx="200" cy="114" r="5" fill="var(--accent)"/>
-        <circle cx="104" cy="130" r="5"/><circle cx="128" cy="130" r="5"/><circle cx="152" cy="130" r="5" fill="var(--accent)"/><circle cx="176" cy="130" r="5"/><circle cx="200" cy="130" r="5"/>
-        <circle cx="104" cy="146" r="5"/><circle cx="128" cy="146" r="5"/><circle cx="152" cy="146" r="5" fill="var(--accent)"/><circle cx="176" cy="146" r="5"/><circle cx="200" cy="146" r="5"/>
-      </g>
-    </svg>
-    <div class="cap">LEGO® <b>51515</b> 주행 베이스 · 바퀴 구동 모터 2개로 주행</div>
+    <div class="model-stage">
+      <img id="modelImg" class="model-img" src="img/blast.jpg" alt="선택한 51515 모델" draggable="false">
+    </div>
+    <div class="cap"><b id="modelName">Blast</b> · <span id="modelTip">두 다리 밑 바퀴로 주행하는 대형 휴머노이드</span></div>
+    <div class="modes" id="modes"></div>
   </div>
 
   <details class="guide" open>
     <summary>🧱 조립하고 주행 시작하기</summary>
     <div class="guide-body">
       <ol class="steps">
-        <li><b>주행 모델 조립.</b> LEGO MINDSTORMS 앱(또는 종이 설명서)의 51515 모델 중 바퀴로 달리는 모델을 만드세요. 추천: <b>Tricky</b>(바퀴 주행)나 <b>MVP</b>(자동차). 핵심은 <b>좌·우 바퀴를 굴리는 모터 2개</b>입니다.</li>
+        <li><b>모델 조립 &amp; 선택.</b> 51515 정식 모델(Blast·Charlie·Tricky·Gelo·M.V.P.) 중 하나를 조립하고, 위에서 <b>같은 모델을 선택</b>하세요. 핵심은 <b>좌·우 바퀴를 굴리는 모터 2개</b>입니다.</li>
         <li><b>모터를 허브에 연결.</b> 두 구동 모터를 아무 포트에나 꽂으세요. 예) 왼쪽 바퀴 → <span class="port">A</span>, 오른쪽 바퀴 → <span class="port">E</span>. 포트는 앱에서 언제든 바꿀 수 있습니다.</li>
         <li><b>허브 켜고 연결.</b> 허브 가운데 버튼으로 전원을 켜고(LEGO 앱 등 다른 기기와는 연결 해제), 아래 <b>‘허브 연결’</b>을 누르세요.</li>
         <li><b>포트 자동 감지.</b> 연결되면 어느 포트에 모터가 꽂혔는지 자동으로 표시됩니다. <b>‘감지된 모터로 자동 설정’</b>을 누르면 좌·우 포트가 채워집니다.</li>
-        <li><b>주행!</b> 조이스틱을 드래그해 운전하세요. 앞으로 가야 하는데 회전만 하면 설정에서 <b>방향 반전</b> 토글을 바꾸면 됩니다.</li>
+        <li><b>주행!</b> 닌텐도 스타일 컨트롤러의 스틱·D패드로 운전하세요. 앞으로 가야 하는데 회전만 하면 설정에서 <b>방향 반전</b> 토글을 바꾸면 됩니다.</li>
       </ol>
     </div>
   </details>
@@ -271,16 +316,49 @@
     <span id="detectChips"><span class="muted">—</span></span>
   </div>
 
-  <div class="pad-wrap">
-    <div class="pad" id="pad">
-      <div class="cross"></div>
-      <span class="arrow up">▲</span>
-      <span class="arrow down">▼</span>
-      <span class="arrow left">◀</span>
-      <span class="arrow right">▶</span>
-      <div class="knob" id="knob">＋</div>
+  <div class="gamepad">
+    <div class="shoulders">
+      <button class="shoulder" id="btnL">L ⟲ 좌회전</button>
+      <button class="shoulder" id="btnR">R ⟳ 우회전</button>
     </div>
-    <div class="hint" id="padHint">연결 후 스틱을 드래그하세요 · 키보드 WASD/방향키도 가능</div>
+    <div class="pad-main">
+      <!-- LEFT: analog stick + D-pad -->
+      <div class="cluster">
+        <div class="pad" id="pad">
+          <span class="arrow up">▲</span><span class="arrow down">▼</span>
+          <span class="arrow left">◀</span><span class="arrow right">▶</span>
+          <div class="knob" id="knob"></div>
+        </div>
+        <div class="dpad">
+          <button class="d up"    data-dir="up">▲</button>
+          <button class="d left"  data-dir="left">◀</button>
+          <button class="d mid"   disabled></button>
+          <button class="d right" data-dir="right">▶</button>
+          <button class="d down"  data-dir="down">▼</button>
+        </div>
+      </div>
+      <!-- CENTER: screen + minus/plus -->
+      <div class="cluster center">
+        <div class="screen">
+          <div class="scr-model" id="scrModel">Blast</div>
+          <div class="scr-speed"><span id="scrSpeed">70</span><small>%</small></div>
+        </div>
+        <div class="minus-plus">
+          <button id="btnMinus" title="속도 -">−</button>
+          <button id="btnPlus"  title="속도 +">＋</button>
+        </div>
+      </div>
+      <!-- RIGHT: A/B/X/Y -->
+      <div class="cluster">
+        <div class="face">
+          <button class="fbtn x" id="btnX" data-act="back">X</button>
+          <button class="fbtn y" id="btnY" data-act="fwd">Y</button>
+          <button class="fbtn a" id="btnA" data-act="boost">A</button>
+          <button class="fbtn b" id="btnB" data-act="stop">B</button>
+        </div>
+      </div>
+    </div>
+    <div class="hint" id="padHint">스틱·D패드로 주행 · <b>Y</b>전진 <b>X</b>후진 <b>A</b>부스트 <b>B</b>정지 · 키보드 WASD/방향키도 가능</div>
   </div>
 
   <div class="telemetry">
@@ -504,7 +582,9 @@ function onDisconnected() {
   updateDetectedUI();
   setStatus("연결 끊김", false);
   connectBtn.textContent = "🔗 허브 연결";
-  resetKnob();
+  stickVec = null;
+  for (const k in held) held[k] = false;
+  knob.style.transform = "translate(0,0)";
 }
 
 /* ── Parse LWP3 notifications: Hub Attached I/O (0x04) → which ports have motors ──
@@ -539,14 +619,16 @@ function setStatus(text, on) {
 }
 
 /* ── Drive mixing (single stick → differential) ── */
+/* ── Unified input state (analog stick + D-pad + shoulders + face buttons) ── */
+const held = { up:false, down:false, left:false, right:false, spinL:false, spinR:false, fwd:false, back:false, boost:false };
+let stickVec = null;   // {x,y} while the analog stick is being dragged
+
 function setStick(nx, ny) {           // nx,ny in [-1,1]; ny up = +forward
-  const throttle = ny;                // forward positive
-  const turn = nx;
-  let l = throttle + turn;
-  let r = throttle - turn;
+  const turn = nx, throttle = ny;
+  let l = throttle + turn, r = throttle - turn;
   const m = Math.max(1, Math.abs(l), Math.abs(r));
   l /= m; r /= m;
-  const scale = cfg.maxSpeed;
+  const scale = held.boost ? 100 : cfg.maxSpeed;
   want.left  = l * scale * (cfg.invLeft  ? -1 : 1);
   want.right = r * scale * (cfg.invRight ? -1 : 1);
   updateTelemetry(l * scale, r * scale);   // show pre-invert (screen-relative) values
@@ -565,7 +647,14 @@ async function stopMotors() {
   sent.left = 0; sent.right = 0;
   updateTelemetry(0,0);
 }
-stopBtn.onclick = () => { stopMotors(); resetKnob(); };
+function allStop() {
+  stickVec = null;
+  for (const k in held) held[k] = false;
+  document.querySelectorAll(".press").forEach(el => el.classList.remove("press"));
+  recompute();
+  stopMotors();
+}
+stopBtn.onclick = allStop;
 
 /* ── Command loop: send only on change, ~25 Hz ── */
 setInterval(() => {
@@ -574,47 +663,121 @@ setInterval(() => {
   if (sent.right !== want.right){ writeMsg(motorPowerMsg(cfg.rightPort, want.right)); sent.right = want.right; }
 }, 40);
 
-/* ── Joystick input (pointer) ── */
-let dragging = false, pid = null;
+/* ── Core: recompute drive vector from all currently-held inputs ── */
 function padMetrics() { const r = pad.getBoundingClientRect(); return { cx:r.left+r.width/2, cy:r.top+r.height/2, radius:r.width/2 }; }
-function moveKnob(clientX, clientY) {
-  const { cx, cy, radius } = padMetrics();
-  const max = radius * 0.62;                 // knob travel limit
+function positionKnob(x, y) {
+  const { radius } = padMetrics(); const max = radius * 0.62;
+  knob.style.transform = `translate(${x*max}px, ${-y*max}px)`;
+}
+function recompute() {
+  let x = 0, y = 0;
+  if (stickVec) { x = stickVec.x; y = stickVec.y; }
+  else {
+    if (held.up)   y += 1; if (held.down) y -= 1;
+    if (held.left) x -= 1; if (held.right) x += 1;
+    if (held.fwd)  y += 1; if (held.back) y -= 1;
+  }
+  if (held.spinL) x -= 1; if (held.spinR) x += 1;
+  const mag = Math.hypot(x, y);
+  if (mag > 1) { x /= mag; y /= mag; }
+  positionKnob(x, y);
+  setStick(x, y);
+}
+
+/* ── Analog stick (drag) ── */
+let dragging = false, pid = null;
+function stickFrom(clientX, clientY) {
+  const { cx, cy, radius } = padMetrics(); const max = radius * 0.62;
   let dx = clientX - cx, dy = clientY - cy;
   const dist = Math.hypot(dx, dy);
   if (dist > max) { dx = dx/dist*max; dy = dy/dist*max; }
-  knob.style.transform = `translate(${dx}px, ${dy}px)`;
-  setStick(dx/max, -dy/max);                 // screen y is down → invert for forward
+  stickVec = { x: dx/max, y: -dy/max };   // screen y down → invert for forward
+  recompute();
 }
-function resetKnob() { knob.style.transform = "translate(0,0)"; want.left=0; want.right=0; updateTelemetry(0,0); }
-
 pad.addEventListener("pointerdown", (e) => {
   if (!connected) { padHint.textContent = "먼저 '허브 연결'을 눌러주세요"; return; }
   dragging = true; pid = e.pointerId; pad.classList.add("dragging");
-  pad.setPointerCapture(pid); moveKnob(e.clientX, e.clientY); e.preventDefault();
+  pad.setPointerCapture(pid); stickFrom(e.clientX, e.clientY); e.preventDefault();
 });
-pad.addEventListener("pointermove", (e) => { if (dragging && e.pointerId===pid) moveKnob(e.clientX, e.clientY); });
-function endDrag(e){ if (!dragging || (pid!==null && e.pointerId!==pid)) return; dragging=false; pid=null; pad.classList.remove("dragging"); resetKnob(); }
+pad.addEventListener("pointermove", (e) => { if (dragging && e.pointerId===pid) stickFrom(e.clientX, e.clientY); });
+function endDrag(e){ if (!dragging || (pid!==null && e.pointerId!==pid)) return; dragging=false; pid=null; pad.classList.remove("dragging"); stickVec=null; recompute(); }
 pad.addEventListener("pointerup", endDrag);
 pad.addEventListener("pointercancel", endDrag);
 pad.addEventListener("lostpointercapture", endDrag);
 
-/* ── Keyboard (desktop testing) ── */
-const keys = new Set();
-function keyDrive() {
-  let x=0,y=0;
-  if (keys.has("w")||keys.has("arrowup")) y+=1;
-  if (keys.has("s")||keys.has("arrowdown")) y-=1;
-  if (keys.has("a")||keys.has("arrowleft")) x-=1;
-  if (keys.has("d")||keys.has("arrowright")) x+=1;
-  if (x===0&&y===0){ resetKnob(); return; }
-  const mag = Math.hypot(x,y)||1; x/=mag; y/=mag;
-  const { radius } = padMetrics(); const max = radius*0.62;
-  knob.style.transform = `translate(${x*max}px, ${-y*max}px)`;
-  setStick(x, y);
+/* ── Hold-to-press helper for gamepad buttons ── */
+function holdBtn(el, onDown, onUp) {
+  if (!el) return;
+  const down = (e) => {
+    if (!connected) { padHint.textContent = "먼저 '허브 연결'을 눌러주세요"; return; }
+    el.classList.add("press"); onDown();
+    try { el.setPointerCapture(e.pointerId); } catch(_){}
+    e.preventDefault();
+  };
+  const up = () => { el.classList.remove("press"); onUp(); };
+  el.addEventListener("pointerdown", down);
+  el.addEventListener("pointerup", up);
+  el.addEventListener("pointercancel", up);
+  el.addEventListener("lostpointercapture", up);
 }
-window.addEventListener("keydown", (e)=>{ const k=e.key.toLowerCase(); if (["w","a","s","d","arrowup","arrowdown","arrowleft","arrowright"].includes(k)){ if(!connected) return; keys.add(k); keyDrive(); e.preventDefault(); }});
-window.addEventListener("keyup",   (e)=>{ const k=e.key.toLowerCase(); if (keys.delete(k)) keyDrive(); });
+function bindHold(el, key) { holdBtn(el, () => { held[key]=true; recompute(); }, () => { held[key]=false; recompute(); }); }
+
+document.querySelectorAll(".dpad .d[data-dir]").forEach(b => bindHold(b, b.dataset.dir));
+bindHold($("btnL"), "spinL");
+bindHold($("btnR"), "spinR");
+bindHold($("btnY"), "fwd");    // Y = 전진
+bindHold($("btnX"), "back");   // X = 후진
+bindHold($("btnA"), "boost");  // A = 부스트
+holdBtn($("btnB"), allStop, () => {});   // B = 긴급 정지
+
+/* ── Speed −/+ ── */
+function setSpeed(v) {
+  cfg.maxSpeed = Math.max(20, Math.min(100, v));
+  $("maxSpeed").value = cfg.maxSpeed;
+  $("maxSpeedLabel").textContent = cfg.maxSpeed;
+  $("scrSpeed").textContent = cfg.maxSpeed;
+  recompute();
+}
+$("btnMinus").onclick = () => setSpeed(cfg.maxSpeed - 10);
+$("btnPlus").onclick  = () => setSpeed(cfg.maxSpeed + 10);
+
+/* ── Model / mode selector ── */
+const MODELS = [
+  { id:"blast",   name:"Blast",   img:"img/blast.jpg",   tip:"두 다리 밑 바퀴로 주행하는 대형 휴머노이드" },
+  { id:"charlie", name:"Charlie", img:"img/charlie.jpg", tip:"두 바퀴로 움직이는 친근한 로봇" },
+  { id:"tricky",  name:"Tricky",  img:"img/tricky.jpg",  tip:"트레드와 바퀴로 달리는 스포츠 로봇" },
+  { id:"gelo",    name:"Gelo",    img:"img/gelo.jpg",    tip:"네 다리로 기어다니는 크롤러" },
+  { id:"mvp",     name:"M.V.P.",  img:"img/mvp.jpg",     tip:"네 바퀴 차량형 모델" },
+];
+const modesEl = $("modes"), modelImg = $("modelImg"), modelName = $("modelName"), modelTip = $("modelTip"), scrModel = $("scrModel");
+function selectModel(id) {
+  const m = MODELS.find(x => x.id === id) || MODELS[0];
+  modelImg.src = m.img; modelImg.alt = m.name + " 모델";
+  modelName.textContent = m.name; modelTip.textContent = m.tip; scrModel.textContent = m.name;
+  [...modesEl.children].forEach(c => c.classList.toggle("sel", c.dataset.id === id));
+}
+MODELS.forEach(m => {
+  const c = document.createElement("button");
+  c.className = "mode-chip"; c.dataset.id = m.id;
+  c.innerHTML = `<img src="${m.img}" alt="${m.name}"><span>${m.name}</span>`;
+  c.onclick = () => selectModel(m.id);
+  modesEl.appendChild(c);
+});
+selectModel("blast");
+
+/* ── Keyboard (desktop) ── */
+const KEYMAP = { w:"up", arrowup:"up", s:"down", arrowdown:"down", a:"left", arrowleft:"left", d:"right", arrowright:"right", q:"spinL", e:"spinR", " ":"boost" };
+window.addEventListener("keydown", (e) => {
+  const k = e.key.toLowerCase(); const key = KEYMAP[k];
+  if (!key || !connected) return;
+  if (!held[key]) { held[key] = true; recompute(); }
+  e.preventDefault();
+});
+window.addEventListener("keyup", (e) => {
+  const k = e.key.toLowerCase(); const key = KEYMAP[k];
+  if (!key) return;
+  held[key] = false; recompute();
+});
 
 /* ── Safety: stop when tab hidden / page unloads ── */
 document.addEventListener("visibilitychange", ()=>{ if (document.hidden && connected) stopMotors(); });
