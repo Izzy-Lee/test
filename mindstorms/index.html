@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0e0f13">
+<title>MINDSTORMS 51515 리모컨</title>
+<style>
+  :root {
+    --bg: #0e0f13;
+    --surface: #171921;
+    --surface-2: #1e2130;
+    --line: rgba(255,255,255,0.08);
+    --text: #eef1f7;
+    --muted: rgba(238,241,247,0.55);
+    --accent: #ff5a1f;      /* MINDSTORMS orange */
+    --accent-2: #2ee6a6;    /* connected green */
+    --danger: #ff4757;
+    --shadow: 0 10px 30px rgba(0,0,0,0.45);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body { height:100%; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", sans-serif;
+    background: radial-gradient(120% 100% at 50% 0%, #16181f 0%, var(--bg) 55%);
+    color: var(--text);
+    min-height: 100dvh;
+    display: flex; flex-direction: column;
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    overscroll-behavior: none;
+    touch-action: manipulation;
+  }
+  header {
+    display:flex; align-items:center; gap:12px;
+    padding: 16px 18px 12px;
+  }
+  .logo {
+    width:38px; height:38px; border-radius:10px; flex:none;
+    background: linear-gradient(135deg, var(--accent), #ff8a3d);
+    display:grid; place-items:center; font-size:20px;
+    box-shadow: 0 6px 16px rgba(255,90,31,0.35);
+  }
+  header h1 { font-size:16px; font-weight:700; letter-spacing:-0.2px; }
+  header p { font-size:11.5px; color:var(--muted); margin-top:2px; }
+
+  .status {
+    margin-left:auto; display:flex; align-items:center; gap:8px;
+    font-size:12px; font-weight:600; color:var(--muted);
+    background: var(--surface); border:1px solid var(--line);
+    padding:7px 12px; border-radius:999px; white-space:nowrap;
+  }
+  .dot { width:9px; height:9px; border-radius:50%; background:var(--danger); box-shadow:0 0 0 0 rgba(46,230,166,0.5); }
+  .status.on { color:var(--accent-2); }
+  .status.on .dot { background:var(--accent-2); animation:pulse 2s infinite; }
+  @keyframes pulse { 0%{box-shadow:0 0 0 0 rgba(46,230,166,0.45);}70%{box-shadow:0 0 0 8px rgba(46,230,166,0);}100%{box-shadow:0 0 0 0 rgba(46,230,166,0);} }
+
+  main { flex:1; display:flex; flex-direction:column; gap:14px; padding: 4px 16px 20px; }
+
+  .banner {
+    background: linear-gradient(180deg, rgba(255,90,31,0.12), rgba(255,90,31,0.05));
+    border:1px solid rgba(255,90,31,0.28);
+    border-radius:14px; padding:12px 14px; font-size:12.5px; line-height:1.55; color:#ffd9c7;
+  }
+  .banner b { color:#fff; }
+  .banner code { background:rgba(0,0,0,0.35); padding:1px 6px; border-radius:5px; font-size:12px; }
+  .banner.hidden { display:none; }
+
+  .btn {
+    appearance:none; border:none; border-radius:14px; font-family:inherit;
+    font-weight:700; font-size:15px; color:#fff; cursor:pointer;
+    padding:15px 18px; transition:transform .08s ease, filter .15s ease;
+    display:flex; align-items:center; justify-content:center; gap:9px;
+  }
+  .btn:active { transform:scale(0.98); }
+  .btn-primary { background: linear-gradient(135deg, var(--accent), #ff7a3d); box-shadow:0 8px 20px rgba(255,90,31,0.32); }
+  .btn-ghost { background: var(--surface-2); color:var(--text); border:1px solid var(--line); }
+  .btn:disabled { opacity:0.45; filter:grayscale(0.3); cursor:not-allowed; }
+  .btn-row { display:flex; gap:10px; }
+  .btn-row .btn { flex:1; }
+
+  /* Joystick */
+  .pad-wrap { display:flex; flex-direction:column; align-items:center; gap:10px; margin-top:2px; }
+  .pad {
+    position:relative; width:min(74vw, 300px); aspect-ratio:1;
+    border-radius:50%; touch-action:none;
+    background:
+      radial-gradient(circle at 50% 50%, var(--surface-2) 0%, var(--surface) 70%),
+      var(--surface);
+    border:1px solid var(--line);
+    box-shadow: inset 0 0 40px rgba(0,0,0,0.5), var(--shadow);
+    display:grid; place-items:center; overflow:hidden;
+  }
+  .pad::before, .pad::after {
+    content:""; position:absolute; background:var(--line);
+  }
+  .pad::before { width:100%; height:1px; }
+  .pad::after { height:100%; width:1px; }
+  .pad .cross { position:absolute; inset:0; pointer-events:none; }
+  .pad .arrow { position:absolute; color:var(--muted); font-size:16px; font-weight:700; opacity:.6; }
+  .arrow.up{top:12px;left:50%;transform:translateX(-50%);}
+  .arrow.down{bottom:12px;left:50%;transform:translateX(-50%);}
+  .arrow.left{left:14px;top:50%;transform:translateY(-50%);}
+  .arrow.right{right:14px;top:50%;transform:translateY(-50%);}
+  .knob {
+    position:relative; z-index:2; width:34%; aspect-ratio:1; border-radius:50%;
+    background: linear-gradient(135deg, var(--accent), #ff8f52);
+    box-shadow: 0 8px 22px rgba(255,90,31,0.45), inset 0 2px 4px rgba(255,255,255,0.35);
+    transition: transform .05s ease-out;
+    display:grid; place-items:center; color:rgba(0,0,0,0.5); font-size:20px;
+    will-change: transform;
+  }
+  .pad.dragging .knob { transition:none; }
+
+  .telemetry { display:flex; gap:10px; }
+  .tcard { flex:1; background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:12px 14px; }
+  .tcard .lbl { font-size:11px; color:var(--muted); font-weight:600; letter-spacing:.3px; }
+  .tcard .val { font-size:22px; font-weight:800; margin-top:3px; font-variant-numeric:tabular-nums; }
+  .tcard .val small { font-size:13px; font-weight:600; color:var(--muted); }
+  .bar { height:6px; border-radius:3px; background:var(--surface-2); margin-top:9px; overflow:hidden; position:relative; }
+  .bar > i { position:absolute; top:0; bottom:0; left:50%; width:0; background:var(--accent); transition:width .08s, left .08s; }
+
+  .stop {
+    background: linear-gradient(135deg, var(--danger), #ff6b7a);
+    box-shadow:0 8px 20px rgba(255,71,87,0.35);
+  }
+
+  /* Settings */
+  details.settings {
+    background:var(--surface); border:1px solid var(--line); border-radius:14px; overflow:hidden;
+  }
+  details.settings > summary {
+    list-style:none; cursor:pointer; padding:14px 16px; font-weight:700; font-size:14px;
+    display:flex; align-items:center; gap:8px;
+  }
+  details.settings > summary::-webkit-details-marker { display:none; }
+  details.settings > summary::after { content:"▾"; margin-left:auto; color:var(--muted); transition:transform .2s; }
+  details.settings[open] > summary::after { transform:rotate(180deg); }
+  .settings-body { padding:2px 16px 16px; display:flex; flex-direction:column; gap:16px; }
+  .field { display:flex; flex-direction:column; gap:7px; }
+  .field > label { font-size:12.5px; color:var(--muted); font-weight:600; }
+  .seg { display:flex; gap:6px; flex-wrap:wrap; }
+  .seg button {
+    flex:1; min-width:40px; padding:9px 0; border-radius:10px; border:1px solid var(--line);
+    background:var(--surface-2); color:var(--text); font-weight:700; font-size:14px; cursor:pointer;
+  }
+  .seg button.sel { background:var(--accent); color:#fff; border-color:transparent; }
+  .row { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+  .toggle { position:relative; width:48px; height:28px; flex:none; }
+  .toggle input { opacity:0; width:100%; height:100%; margin:0; cursor:pointer; }
+  .toggle .track { position:absolute; inset:0; background:var(--surface-2); border:1px solid var(--line); border-radius:999px; transition:.15s; pointer-events:none; }
+  .toggle .track::after { content:""; position:absolute; top:3px; left:3px; width:20px; height:20px; border-radius:50%; background:#fff; transition:.15s; }
+  .toggle input:checked + .track { background:var(--accent); border-color:transparent; }
+  .toggle input:checked + .track::after { transform:translateX(20px); }
+  input[type=range] { width:100%; accent-color:var(--accent); }
+  .hint { font-size:11.5px; color:var(--muted); line-height:1.5; }
+  footer { text-align:center; font-size:11px; color:var(--muted); padding:6px 0 14px; }
+  footer a { color:var(--muted); }
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">🤖</div>
+  <div>
+    <h1>MINDSTORMS 51515 리모컨</h1>
+    <p>Robot Inventor · Web Bluetooth 주행 컨트롤러</p>
+  </div>
+  <div class="status" id="status"><span class="dot"></span><span id="statusText">연결 안 됨</span></div>
+</header>
+
+<main>
+  <div class="banner" id="iosBanner">
+    <b>아이폰 / 아이패드 사용자</b><br>
+    iOS Safari·크롬은 Web Bluetooth를 지원하지 않습니다. App Store에서 <b>Bluefy</b>(무료)를 설치하고,
+    <b>Bluefy 안에서 이 페이지를 열어</b> 연결하세요. PC 크롬·안드로이드 크롬에서는 기본 브라우저로 바로 됩니다.
+  </div>
+
+  <button class="btn btn-primary" id="connectBtn">🔗 허브 연결</button>
+
+  <div class="pad-wrap">
+    <div class="pad" id="pad">
+      <div class="cross"></div>
+      <span class="arrow up">▲</span>
+      <span class="arrow down">▼</span>
+      <span class="arrow left">◀</span>
+      <span class="arrow right">▶</span>
+      <div class="knob" id="knob">＋</div>
+    </div>
+    <div class="hint" id="padHint">연결 후 스틱을 드래그하세요 · 키보드 WASD/방향키도 가능</div>
+  </div>
+
+  <div class="telemetry">
+    <div class="tcard">
+      <div class="lbl">왼쪽 모터</div>
+      <div class="val"><span id="leftVal">0</span><small>%</small></div>
+      <div class="bar"><i id="leftBar"></i></div>
+    </div>
+    <div class="tcard">
+      <div class="lbl">오른쪽 모터</div>
+      <div class="val"><span id="rightVal">0</span><small>%</small></div>
+      <div class="bar"><i id="rightBar"></i></div>
+    </div>
+  </div>
+
+  <button class="btn stop" id="stopBtn">■ 긴급 정지</button>
+
+  <details class="settings">
+    <summary>⚙️ 설정 (모터 포트 · 속도)</summary>
+    <div class="settings-body">
+      <div class="field">
+        <label>왼쪽 모터 포트</label>
+        <div class="seg" id="leftPortSeg"></div>
+      </div>
+      <div class="field">
+        <label>오른쪽 모터 포트</label>
+        <div class="seg" id="rightPortSeg"></div>
+      </div>
+      <div class="row">
+        <label style="font-size:13px;font-weight:600;">왼쪽 방향 반전</label>
+        <span class="toggle"><input type="checkbox" id="invLeft"><span class="track"></span></span>
+      </div>
+      <div class="row">
+        <label style="font-size:13px;font-weight:600;">오른쪽 방향 반전</label>
+        <span class="toggle"><input type="checkbox" id="invRight" checked><span class="track"></span></span>
+      </div>
+      <div class="field">
+        <label>최고 속도: <span id="maxSpeedLabel">70</span>%</label>
+        <input type="range" id="maxSpeed" min="20" max="100" value="70" step="5">
+      </div>
+      <p class="hint">
+        주행 베이스는 보통 두 모터가 서로 마주 보게 조립되어, 한쪽을 <b>반전</b>해야 함께 전진합니다.
+        기본값(오른쪽 반전)으로 앞으로 안 가면 반전 토글을 바꿔보세요. 포트는 허브의 A~F 중 모터가 꽂힌 곳을 고르세요.
+      </p>
+    </div>
+  </details>
+</main>
+
+<footer>LEGO® MINDSTORMS® Robot Inventor(51515) · 비공식 컨트롤러 · <a href="../">← 포트폴리오</a></footer>
+
+<script>
+"use strict";
+/* ─── LEGO Wireless Protocol v3 (LWP3) over BLE ─────────────────────────
+   Hub service:        00001623-1212-efde-1623-785feabcd123
+   Hub characteristic: 00001624-1212-efde-1623-785feabcd123  (write + notify)
+   Motor drive uses Port Output Command (0x81) → WriteDirectModeData (0x51)
+   mode 0x00 = direct power (PWM), payload = signed int8 (-100..100).       */
+const LWP3_SERVICE = "00001623-1212-efde-1623-785feabcd123";
+const LWP3_CHAR    = "00001624-1212-efde-1623-785feabcd123";
+const PORTS = { A:0, B:1, C:2, D:3, E:4, F:5 };
+
+let device = null, characteristic = null;
+let canWriteNoResp = false;
+let connected = false;
+
+// desired + last-sent motor power (-100..100)
+let want = { left:0, right:0 };
+let sent = { left:null, right:null };
+
+const cfg = {
+  leftPort: "A",
+  rightPort: "B",
+  invLeft: false,
+  invRight: true,
+  maxSpeed: 70,
+};
+
+/* ── DOM ── */
+const $ = (id) => document.getElementById(id);
+const statusEl = $("status"), statusText = $("statusText");
+const connectBtn = $("connectBtn"), stopBtn = $("stopBtn");
+const pad = $("pad"), knob = $("knob"), padHint = $("padHint");
+const leftVal=$("leftVal"), rightVal=$("rightVal"), leftBar=$("leftBar"), rightBar=$("rightBar");
+
+/* ── Build port selectors ── */
+function buildSeg(container, current, onPick) {
+  container.innerHTML = "";
+  for (const p of Object.keys(PORTS)) {
+    const b = document.createElement("button");
+    b.textContent = p;
+    if (p === current) b.classList.add("sel");
+    b.onclick = () => {
+      [...container.children].forEach(c => c.classList.remove("sel"));
+      b.classList.add("sel");
+      onPick(p);
+    };
+    container.appendChild(b);
+  }
+}
+buildSeg($("leftPortSeg"), cfg.leftPort, p => cfg.leftPort = p);
+buildSeg($("rightPortSeg"), cfg.rightPort, p => cfg.rightPort = p);
+$("invLeft").onchange  = e => cfg.invLeft  = e.target.checked;
+$("invRight").onchange = e => cfg.invRight = e.target.checked;
+$("maxSpeed").oninput  = e => { cfg.maxSpeed = +e.target.value; $("maxSpeedLabel").textContent = e.target.value; };
+
+/* ── Hide iOS banner where Web Bluetooth exists (Bluefy, Chrome, etc.) ── */
+if (navigator.bluetooth) $("iosBanner").classList.add("hidden");
+
+/* ── LWP3 message builders ── */
+function motorPowerMsg(port, power) {
+  power = Math.max(-100, Math.min(100, Math.round(power)));
+  const signed = power < 0 ? power + 256 : power;      // int8 two's complement
+  //           [len, hubId, type=0x81, port, startup&completion=0x11, subcmd=0x51(WriteDirect), mode=0x00, power]
+  return Uint8Array.of(0x08, 0x00, 0x81, PORTS[port], 0x11, 0x51, 0x00, signed);
+}
+
+async function writeMsg(bytes) {
+  if (!characteristic) return;
+  try {
+    if (canWriteNoResp && characteristic.writeValueWithoutResponse) {
+      await characteristic.writeValueWithoutResponse(bytes);
+    } else {
+      await characteristic.writeValue(bytes);
+    }
+  } catch (e) { /* transient BLE congestion — dropped frame is fine for RC */ }
+}
+
+/* ── Connection ── */
+async function connect() {
+  if (!navigator.bluetooth) {
+    alert("이 브라우저는 Web Bluetooth를 지원하지 않습니다.\n아이폰/아이패드는 App Store의 'Bluefy' 브라우저에서 이 페이지를 열어주세요.");
+    return;
+  }
+  try {
+    setStatus("스캔 중…", false);
+    device = await navigator.bluetooth.requestDevice({
+      filters: [{ services: [LWP3_SERVICE] }],
+      optionalServices: [LWP3_SERVICE],
+    });
+    device.addEventListener("gattdisconnected", onDisconnected);
+    setStatus("연결 중…", false);
+    const server = await device.gatt.connect();
+    const service = await server.getPrimaryService(LWP3_SERVICE);
+    characteristic = await service.getCharacteristic(LWP3_CHAR);
+    canWriteNoResp = !!characteristic.properties.writeWithoutResponse;
+    try { await characteristic.startNotifications(); } catch(e){}
+    connected = true;
+    setStatus(device.name || "허브 연결됨", true);
+    connectBtn.textContent = "🔌 연결 해제";
+    padHint.textContent = "스틱을 드래그해 주행하세요 · 놓으면 정지";
+  } catch (e) {
+    if (e && e.name === "NotFoundError") { setStatus("연결 안 됨", false); return; } // user cancelled
+    console.error(e);
+    alert("연결 실패: " + (e && e.message ? e.message : e) +
+          "\n\n허브 전원이 켜져 있고 (가운데 버튼) 다른 앱(LEGO 앱 등)과 연결되어 있지 않은지 확인하세요.");
+    setStatus("연결 안 됨", false);
+  }
+}
+
+function onDisconnected() {
+  connected = false; characteristic = null;
+  want = {left:0,right:0}; sent = {left:null,right:null};
+  updateTelemetry(0,0);
+  setStatus("연결 끊김", false);
+  connectBtn.textContent = "🔗 허브 연결";
+  resetKnob();
+}
+
+async function disconnect() {
+  await stopMotors();
+  if (device && device.gatt.connected) device.gatt.disconnect();
+  else onDisconnected();
+}
+
+connectBtn.onclick = () => connected ? disconnect() : connect();
+
+function setStatus(text, on) {
+  statusText.textContent = text;
+  statusEl.classList.toggle("on", !!on);
+}
+
+/* ── Drive mixing (single stick → differential) ── */
+function setStick(nx, ny) {           // nx,ny in [-1,1]; ny up = +forward
+  const throttle = ny;                // forward positive
+  const turn = nx;
+  let l = throttle + turn;
+  let r = throttle - turn;
+  const m = Math.max(1, Math.abs(l), Math.abs(r));
+  l /= m; r /= m;
+  const scale = cfg.maxSpeed;
+  want.left  = l * scale * (cfg.invLeft  ? -1 : 1);
+  want.right = r * scale * (cfg.invRight ? -1 : 1);
+  updateTelemetry(l * scale, r * scale);   // show pre-invert (screen-relative) values
+}
+
+function updateTelemetry(l, r) {
+  l = Math.round(l); r = Math.round(r);
+  leftVal.textContent = l; rightVal.textContent = r;
+  leftBar.style.width  = Math.abs(l)/2 + "%"; leftBar.style.left  = l<0 ? (50 - Math.abs(l)/2)+"%" : "50%";
+  rightBar.style.width = Math.abs(r)/2 + "%"; rightBar.style.left = r<0 ? (50 - Math.abs(r)/2)+"%" : "50%";
+}
+
+async function stopMotors() {
+  want.left = 0; want.right = 0;
+  if (characteristic) { await writeMsg(motorPowerMsg(cfg.leftPort,0)); await writeMsg(motorPowerMsg(cfg.rightPort,0)); }
+  sent.left = 0; sent.right = 0;
+  updateTelemetry(0,0);
+}
+stopBtn.onclick = () => { stopMotors(); resetKnob(); };
+
+/* ── Command loop: send only on change, ~25 Hz ── */
+setInterval(() => {
+  if (!connected || !characteristic) return;
+  if (sent.left !== want.left)  { writeMsg(motorPowerMsg(cfg.leftPort,  want.left));  sent.left  = want.left; }
+  if (sent.right !== want.right){ writeMsg(motorPowerMsg(cfg.rightPort, want.right)); sent.right = want.right; }
+}, 40);
+
+/* ── Joystick input (pointer) ── */
+let dragging = false, pid = null;
+function padMetrics() { const r = pad.getBoundingClientRect(); return { cx:r.left+r.width/2, cy:r.top+r.height/2, radius:r.width/2 }; }
+function moveKnob(clientX, clientY) {
+  const { cx, cy, radius } = padMetrics();
+  const max = radius * 0.62;                 // knob travel limit
+  let dx = clientX - cx, dy = clientY - cy;
+  const dist = Math.hypot(dx, dy);
+  if (dist > max) { dx = dx/dist*max; dy = dy/dist*max; }
+  knob.style.transform = `translate(${dx}px, ${dy}px)`;
+  setStick(dx/max, -dy/max);                 // screen y is down → invert for forward
+}
+function resetKnob() { knob.style.transform = "translate(0,0)"; want.left=0; want.right=0; updateTelemetry(0,0); }
+
+pad.addEventListener("pointerdown", (e) => {
+  if (!connected) { padHint.textContent = "먼저 '허브 연결'을 눌러주세요"; return; }
+  dragging = true; pid = e.pointerId; pad.classList.add("dragging");
+  pad.setPointerCapture(pid); moveKnob(e.clientX, e.clientY); e.preventDefault();
+});
+pad.addEventListener("pointermove", (e) => { if (dragging && e.pointerId===pid) moveKnob(e.clientX, e.clientY); });
+function endDrag(e){ if (!dragging || (pid!==null && e.pointerId!==pid)) return; dragging=false; pid=null; pad.classList.remove("dragging"); resetKnob(); }
+pad.addEventListener("pointerup", endDrag);
+pad.addEventListener("pointercancel", endDrag);
+pad.addEventListener("lostpointercapture", endDrag);
+
+/* ── Keyboard (desktop testing) ── */
+const keys = new Set();
+function keyDrive() {
+  let x=0,y=0;
+  if (keys.has("w")||keys.has("arrowup")) y+=1;
+  if (keys.has("s")||keys.has("arrowdown")) y-=1;
+  if (keys.has("a")||keys.has("arrowleft")) x-=1;
+  if (keys.has("d")||keys.has("arrowright")) x+=1;
+  if (x===0&&y===0){ resetKnob(); return; }
+  const mag = Math.hypot(x,y)||1; x/=mag; y/=mag;
+  const { radius } = padMetrics(); const max = radius*0.62;
+  knob.style.transform = `translate(${x*max}px, ${-y*max}px)`;
+  setStick(x, y);
+}
+window.addEventListener("keydown", (e)=>{ const k=e.key.toLowerCase(); if (["w","a","s","d","arrowup","arrowdown","arrowleft","arrowright"].includes(k)){ if(!connected) return; keys.add(k); keyDrive(); e.preventDefault(); }});
+window.addEventListener("keyup",   (e)=>{ const k=e.key.toLowerCase(); if (keys.delete(k)) keyDrive(); });
+
+/* ── Safety: stop when tab hidden / page unloads ── */
+document.addEventListener("visibilitychange", ()=>{ if (document.hidden && connected) stopMotors(); });
+window.addEventListener("pagehide", ()=>{ if (connected) { try{ characteristic && characteristic.writeValue(motorPowerMsg(cfg.leftPort,0)); }catch(e){} } });
+</script>
+</body>
+</html>
