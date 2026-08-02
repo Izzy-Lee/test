@@ -8,267 +8,149 @@
 <title>마인드스톰 주행컨트롤러</title>
 <style>
   :root {
-    --bg: #0e0f13;
-    --surface: #171921;
-    --surface-2: #1e2130;
-    --line: rgba(255,255,255,0.08);
-    --text: #eef1f7;
-    --muted: rgba(238,241,247,0.55);
-    --accent: #ff5a1f;      /* MINDSTORMS orange */
-    --accent-2: #2ee6a6;    /* connected green */
-    --danger: #ff4757;
-    --shadow: 0 10px 30px rgba(0,0,0,0.45);
+    --bg:#0e0f13; --surface:#171921; --surface-2:#1e2130; --line:rgba(255,255,255,0.08);
+    --text:#eef1f7; --muted:rgba(238,241,247,0.55);
+    --accent:#ff5a1f; --accent-2:#2ee6a6; --danger:#ff4757;
+    --shadow:0 10px 30px rgba(0,0,0,0.45);
   }
   * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
   html,body { height:100%; }
   body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", sans-serif;
-    background: radial-gradient(120% 100% at 50% 0%, #16181f 0%, var(--bg) 55%);
-    color: var(--text);
-    min-height: 100dvh;
-    display: flex; flex-direction: column;
-    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
-    overscroll-behavior: none;
-    touch-action: manipulation;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans KR",sans-serif;
+    background:radial-gradient(120% 100% at 50% 0%, #16181f 0%, var(--bg) 55%);
+    color:var(--text); min-height:100dvh; display:flex; flex-direction:column;
+    padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    overscroll-behavior:none; touch-action:manipulation;
   }
-  header {
-    display:flex; align-items:center; gap:12px;
-    padding: 16px 18px 12px;
-  }
-  .logo {
-    width:38px; height:38px; border-radius:10px; flex:none;
-    background: linear-gradient(135deg, var(--accent), #ff8a3d);
-    display:grid; place-items:center; font-size:20px;
-    box-shadow: 0 6px 16px rgba(255,90,31,0.35);
-  }
+  header { display:flex; align-items:center; gap:12px; padding:16px 18px 12px; }
+  .logo { width:38px; height:38px; border-radius:10px; flex:none;
+    background:linear-gradient(135deg,var(--accent),#ff8a3d); display:grid; place-items:center; font-size:20px;
+    box-shadow:0 6px 16px rgba(255,90,31,0.35); }
   header h1 { font-size:16px; font-weight:700; letter-spacing:-0.2px; }
   header p { font-size:11.5px; color:var(--muted); margin-top:2px; }
-
-  .status {
-    margin-left:auto; display:flex; align-items:center; gap:8px;
-    font-size:12px; font-weight:600; color:var(--muted);
-    background: var(--surface); border:1px solid var(--line);
-    padding:7px 12px; border-radius:999px; white-space:nowrap;
-  }
-  .dot { width:9px; height:9px; border-radius:50%; background:var(--danger); box-shadow:0 0 0 0 rgba(46,230,166,0.5); }
-  .status.on { color:var(--accent-2); }
-  .status.on .dot { background:var(--accent-2); animation:pulse 2s infinite; }
+  .status { margin-left:auto; display:flex; align-items:center; gap:8px; font-size:12px; font-weight:600;
+    color:var(--muted); background:var(--surface); border:1px solid var(--line); padding:7px 12px; border-radius:999px; white-space:nowrap; }
+  .dot { width:9px; height:9px; border-radius:50%; background:var(--danger); }
+  .status.on { color:var(--accent-2); } .status.on .dot { background:var(--accent-2); animation:pulse 2s infinite; }
   @keyframes pulse { 0%{box-shadow:0 0 0 0 rgba(46,230,166,0.45);}70%{box-shadow:0 0 0 8px rgba(46,230,166,0);}100%{box-shadow:0 0 0 0 rgba(46,230,166,0);} }
 
-  main { flex:1; display:flex; flex-direction:column; gap:14px; padding: 4px 16px 20px; }
+  main { flex:1; display:flex; flex-direction:column; gap:14px; padding:4px 16px 20px; }
 
-  .banner {
-    background: linear-gradient(180deg, rgba(255,90,31,0.12), rgba(255,90,31,0.05));
-    border:1px solid rgba(255,90,31,0.28);
-    border-radius:14px; padding:12px 14px; font-size:12.5px; line-height:1.55; color:#ffd9c7;
-  }
-  .banner b { color:#fff; }
-  .banner code { background:rgba(0,0,0,0.35); padding:1px 6px; border-radius:5px; font-size:12px; }
+  .banner { background:linear-gradient(180deg,rgba(255,90,31,0.12),rgba(255,90,31,0.05));
+    border:1px solid rgba(255,90,31,0.28); border-radius:14px; padding:12px 14px; font-size:12.5px; line-height:1.55; color:#ffd9c7; }
+  .banner b { color:#fff; } .banner code { background:rgba(0,0,0,0.35); padding:1px 6px; border-radius:5px; }
   .banner.hidden { display:none; }
 
-  .btn {
-    appearance:none; border:none; border-radius:14px; font-family:inherit;
-    font-weight:700; font-size:15px; color:#fff; cursor:pointer;
-    padding:15px 18px; transition:transform .08s ease, filter .15s ease;
-    display:flex; align-items:center; justify-content:center; gap:9px;
-  }
+  .btn { appearance:none; border:none; border-radius:14px; font-family:inherit; font-weight:700; font-size:15px;
+    color:#fff; cursor:pointer; padding:15px 18px; transition:transform .08s, filter .15s; display:flex; align-items:center; justify-content:center; gap:9px; }
   .btn:active { transform:scale(0.98); }
-  .btn-primary { background: linear-gradient(135deg, var(--accent), #ff7a3d); box-shadow:0 8px 20px rgba(255,90,31,0.32); }
-  .btn-ghost { background: var(--surface-2); color:var(--text); border:1px solid var(--line); }
+  .btn-primary { background:linear-gradient(135deg,var(--accent),#ff7a3d); box-shadow:0 8px 20px rgba(255,90,31,0.32); }
   .btn:disabled { opacity:0.45; filter:grayscale(0.3); cursor:not-allowed; }
-  .btn-row { display:flex; gap:10px; }
-  .btn-row .btn { flex:1; }
+  .stop { background:linear-gradient(135deg,var(--danger),#ff6b7a); box-shadow:0 8px 20px rgba(255,71,87,0.35); }
 
-  /* ── Nintendo-style gamepad ── */
-  .gamepad {
-    background: linear-gradient(180deg, #23252f 0%, #191b22 100%);
-    border:1px solid var(--line); border-radius:26px;
-    padding:14px 16px 16px; box-shadow: var(--shadow), inset 0 1px 0 rgba(255,255,255,0.05);
-  }
-  .shoulders { display:flex; justify-content:space-between; gap:10px; margin-bottom:12px; }
-  .shoulder {
-    flex:1; border:none; border-radius:14px 14px 8px 8px; cursor:pointer;
-    background: linear-gradient(180deg,#3a3d49,#2a2c36); color:var(--text);
-    font-weight:700; font-size:12.5px; padding:10px 8px; font-family:inherit;
-    box-shadow:0 3px 0 #15161c; touch-action:none; user-select:none; -webkit-user-select:none;
-  }
-  .shoulder.press { transform:translateY(2px); box-shadow:0 1px 0 #15161c; background:linear-gradient(180deg,var(--accent),#ff7a3d); color:#fff; }
-
-  .pad-main { display:flex; align-items:center; justify-content:space-between; gap:10px; }
-  .cluster { display:flex; flex-direction:column; align-items:center; gap:12px; }
-  .cluster.center { gap:10px; }
-
-  /* analog stick */
-  .pad {
-    position:relative; width:clamp(96px,30vw,132px); aspect-ratio:1;
-    border-radius:50%; touch-action:none;
-    background: radial-gradient(circle at 50% 40%, #34373f 0%, #202229 72%);
-    border:1px solid var(--line);
-    box-shadow: inset 0 3px 10px rgba(0,0,0,0.6), inset 0 -2px 6px rgba(255,255,255,0.04);
-    display:grid; place-items:center; overflow:hidden; flex:none;
-  }
-  .pad .arrow { position:absolute; color:var(--muted); font-size:11px; opacity:.4; pointer-events:none; }
-  .arrow.up{top:7px;left:50%;transform:translateX(-50%);}
-  .arrow.down{bottom:7px;left:50%;transform:translateX(-50%);}
-  .arrow.left{left:8px;top:50%;transform:translateY(-50%);}
-  .arrow.right{right:8px;top:50%;transform:translateY(-50%);}
-  .knob {
-    position:relative; z-index:2; width:52%; aspect-ratio:1; border-radius:50%;
-    background: radial-gradient(circle at 50% 35%, #4a4d58 0%, #23252d 75%);
-    border:1px solid rgba(255,255,255,0.10);
-    box-shadow: 0 4px 10px rgba(0,0,0,0.5), inset 0 2px 3px rgba(255,255,255,0.12);
-    transition: transform .06s ease-out; will-change:transform;
-  }
-  .pad.dragging .knob { transition:none; }
-
-  /* D-pad */
-  .dpad { display:grid; grid-template-columns:repeat(3,1fr); grid-template-rows:repeat(3,1fr);
-    width:clamp(96px,30vw,126px); aspect-ratio:1; gap:3px; }
-  .dpad .d {
-    border:none; background:linear-gradient(180deg,#33353f,#25272f); color:var(--text);
-    font-size:12px; cursor:pointer; box-shadow:0 2px 0 #14151a; touch-action:none;
-    user-select:none; -webkit-user-select:none; display:grid; place-items:center;
-  }
-  .dpad .up{grid-area:1/2;border-radius:8px 8px 0 0;}
-  .dpad .left{grid-area:2/1;border-radius:8px 0 0 8px;}
-  .dpad .mid{grid-area:2/2;background:#25272f;box-shadow:none;}
-  .dpad .right{grid-area:2/3;border-radius:0 8px 8px 0;}
-  .dpad .down{grid-area:3/2;border-radius:0 0 8px 8px;}
-  .dpad .d.press{background:linear-gradient(180deg,var(--accent),#ff7a3d);color:#fff;transform:translateY(1px);}
-
-  /* face buttons A/B/X/Y */
-  .face { position:relative; display:grid; grid-template-columns:repeat(3,1fr); grid-template-rows:repeat(3,1fr);
-    width:clamp(120px,38vw,150px); aspect-ratio:1; gap:4px; }
-  .fbtn {
-    border:none; border-radius:50%; color:#fff; font-weight:800; font-size:clamp(15px,4.5vw,19px);
-    cursor:pointer; font-family:inherit; touch-action:none; user-select:none; -webkit-user-select:none;
-    box-shadow:0 3px 0 rgba(0,0,0,0.45), inset 0 2px 3px rgba(255,255,255,0.25);
-  }
-  .fbtn.press { transform:translateY(2px); box-shadow:0 1px 0 rgba(0,0,0,0.45), inset 0 2px 6px rgba(0,0,0,0.3); filter:brightness(1.15); }
-  .fbtn.x{grid-area:1/2;background:#0a9ac9;}   /* top  · 후진 */
-  .fbtn.y{grid-area:2/1;background:#12a150;}   /* left · 전진 */
-  .fbtn.a{grid-area:2/3;background:#e60012;}   /* right· 부스트 */
-  .fbtn.b{grid-area:3/2;background:#f2c200;color:#3a2e00;} /* bottom· 정지 */
-
-  /* center screen + minus/plus */
-  .screen {
-    width:clamp(78px,24vw,104px); aspect-ratio:4/3; border-radius:10px;
-    background:linear-gradient(180deg,#0c1512,#0a0f0d); border:1px solid rgba(46,230,166,0.25);
-    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px;
-    box-shadow:inset 0 0 14px rgba(0,0,0,0.7);
-  }
-  .scr-model { font-size:12px; font-weight:800; color:var(--accent-2); letter-spacing:.3px; text-align:center; }
-  .scr-speed { font-size:20px; font-weight:800; color:var(--accent-2); font-variant-numeric:tabular-nums; }
-  .scr-speed small { font-size:11px; }
-  .minus-plus { display:flex; gap:14px; }
-  .minus-plus button {
-    width:34px; height:34px; border-radius:50%; border:1px solid var(--line);
-    background:#2a2c36; color:var(--text); font-size:18px; font-weight:800; cursor:pointer;
-    display:grid; place-items:center; touch-action:manipulation;
-  }
-  .minus-plus button:active { background:var(--accent); color:#fff; }
-  .gamepad .hint { text-align:center; margin-top:12px; }
-  .gamepad .hint b { color:var(--text); }
-
-  /* model selector */
+  /* hero / model selector */
+  .hero { background:linear-gradient(180deg,var(--surface) 0%, rgba(23,25,33,0.4) 100%);
+    border:1px solid var(--line); border-radius:18px; padding:6px 10px 12px;
+    display:flex; flex-direction:column; align-items:center; gap:4px; box-shadow:var(--shadow); }
   .model-stage { width:100%; display:grid; place-items:center; padding:4px 0 2px; }
-  .model-img { width:min(62vw,230px); height:auto; max-height:210px; object-fit:contain;
-    filter:drop-shadow(0 12px 18px rgba(0,0,0,0.5)); }
+  .model-img { width:min(62vw,230px); height:auto; max-height:210px; object-fit:contain; filter:drop-shadow(0 12px 18px rgba(0,0,0,0.5)); }
+  .cap { font-size:12px; color:var(--muted); font-weight:600; } .cap b { color:var(--accent); }
   .modes { display:flex; gap:8px; flex-wrap:wrap; justify-content:center; margin-top:8px; }
-  .mode-chip {
-    border:1px solid var(--line); background:var(--surface-2); border-radius:12px; padding:5px;
-    cursor:pointer; width:60px; display:flex; flex-direction:column; align-items:center; gap:3px;
-  }
+  .mode-chip { border:1px solid var(--line); background:var(--surface-2); border-radius:12px; padding:5px; cursor:pointer;
+    width:60px; display:flex; flex-direction:column; align-items:center; gap:3px; }
   .mode-chip img { width:44px; height:44px; object-fit:contain; }
   .mode-chip span { font-size:10px; font-weight:700; color:var(--muted); }
-  .mode-chip.sel { border-color:var(--accent); background:rgba(255,90,31,0.10); }
-  .mode-chip.sel span { color:var(--accent); }
+  .mode-chip.sel { border-color:var(--accent); background:rgba(255,90,31,0.10); } .mode-chip.sel span { color:var(--accent); }
+
+  /* collapsibles */
+  details.card { background:var(--surface); border:1px solid var(--line); border-radius:14px; overflow:hidden; }
+  details.card > summary { list-style:none; cursor:pointer; padding:14px 16px; font-weight:700; font-size:14px; display:flex; align-items:center; gap:8px; }
+  details.card > summary::-webkit-details-marker { display:none; }
+  details.card > summary::after { content:"▾"; margin-left:auto; color:var(--muted); transition:transform .2s; }
+  details.card[open] > summary::after { transform:rotate(180deg); }
+  .card-body { padding:0 16px 16px; }
+  ol.steps { list-style:none; counter-reset:s; display:flex; flex-direction:column; gap:12px; }
+  ol.steps > li { counter-increment:s; position:relative; padding-left:38px; font-size:13px; line-height:1.6; }
+  ol.steps > li::before { content:counter(s); position:absolute; left:0; top:-1px; width:26px; height:26px;
+    background:var(--accent); color:#fff; border-radius:50%; display:grid; place-items:center; font-weight:800; font-size:13px; }
+  ol.steps b { color:#fff; } ol.steps a { color:var(--accent-2); }
+  .port { display:inline-block; min-width:20px; text-align:center; background:var(--surface-2); border:1px solid var(--line);
+    border-radius:6px; padding:0 6px; font-weight:800; color:var(--accent); }
+
+  /* code box */
+  .codewrap { position:relative; margin-top:10px; }
+  pre.code { background:#0a0c11; border:1px solid var(--line); border-radius:10px; padding:12px 12px; overflow-x:auto;
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:11.5px; line-height:1.5; color:#d7e6df; }
+  .copybtn { position:absolute; top:8px; right:8px; background:var(--surface-2); color:var(--accent-2);
+    border:1px solid rgba(46,230,166,0.4); border-radius:8px; padding:6px 10px; font-size:11px; font-weight:700; cursor:pointer; }
+
+  /* Nintendo-style gamepad */
+  .gamepad { background:linear-gradient(180deg,#23252f 0%, #191b22 100%); border:1px solid var(--line);
+    border-radius:26px; padding:14px 16px 16px; box-shadow:var(--shadow), inset 0 1px 0 rgba(255,255,255,0.05); }
+  .shoulders { display:flex; justify-content:space-between; gap:10px; margin-bottom:12px; }
+  .shoulder { flex:1; border:none; border-radius:14px 14px 8px 8px; cursor:pointer;
+    background:linear-gradient(180deg,#3a3d49,#2a2c36); color:var(--text); font-weight:700; font-size:12.5px; padding:10px 8px;
+    font-family:inherit; box-shadow:0 3px 0 #15161c; touch-action:none; user-select:none; -webkit-user-select:none; }
+  .shoulder.press { transform:translateY(2px); box-shadow:0 1px 0 #15161c; background:linear-gradient(180deg,var(--accent),#ff7a3d); color:#fff; }
+  .pad-main { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+  .cluster { display:flex; flex-direction:column; align-items:center; gap:12px; } .cluster.center { gap:10px; }
+  .pad { position:relative; width:clamp(96px,30vw,132px); aspect-ratio:1; border-radius:50%; touch-action:none;
+    background:radial-gradient(circle at 50% 40%, #34373f 0%, #202229 72%); border:1px solid var(--line);
+    box-shadow:inset 0 3px 10px rgba(0,0,0,0.6), inset 0 -2px 6px rgba(255,255,255,0.04); display:grid; place-items:center; overflow:hidden; flex:none; }
+  .pad .arrow { position:absolute; color:var(--muted); font-size:11px; opacity:.4; pointer-events:none; }
+  .arrow.up{top:7px;left:50%;transform:translateX(-50%);} .arrow.down{bottom:7px;left:50%;transform:translateX(-50%);}
+  .arrow.left{left:8px;top:50%;transform:translateY(-50%);} .arrow.right{right:8px;top:50%;transform:translateY(-50%);}
+  .knob { position:relative; z-index:2; width:52%; aspect-ratio:1; border-radius:50%;
+    background:radial-gradient(circle at 50% 35%, #4a4d58 0%, #23252d 75%); border:1px solid rgba(255,255,255,0.10);
+    box-shadow:0 4px 10px rgba(0,0,0,0.5), inset 0 2px 3px rgba(255,255,255,0.12); transition:transform .06s ease-out; will-change:transform; }
+  .pad.dragging .knob { transition:none; }
+  .dpad { display:grid; grid-template-columns:repeat(3,1fr); grid-template-rows:repeat(3,1fr); width:clamp(96px,30vw,126px); aspect-ratio:1; gap:3px; }
+  .dpad .d { border:none; background:linear-gradient(180deg,#33353f,#25272f); color:var(--text); font-size:12px; cursor:pointer;
+    box-shadow:0 2px 0 #14151a; touch-action:none; user-select:none; -webkit-user-select:none; display:grid; place-items:center; }
+  .dpad .up{grid-area:1/2;border-radius:8px 8px 0 0;} .dpad .left{grid-area:2/1;border-radius:8px 0 0 8px;}
+  .dpad .mid{grid-area:2/2;background:#25272f;box-shadow:none;} .dpad .right{grid-area:2/3;border-radius:0 8px 8px 0;}
+  .dpad .down{grid-area:3/2;border-radius:0 0 8px 8px;}
+  .dpad .d.press{background:linear-gradient(180deg,var(--accent),#ff7a3d);color:#fff;transform:translateY(1px);}
+  .face { display:grid; grid-template-columns:repeat(3,1fr); grid-template-rows:repeat(3,1fr); width:clamp(120px,38vw,150px); aspect-ratio:1; gap:4px; }
+  .fbtn { border:none; border-radius:50%; color:#fff; font-weight:800; font-size:clamp(15px,4.5vw,19px); cursor:pointer;
+    font-family:inherit; touch-action:none; user-select:none; -webkit-user-select:none; box-shadow:0 3px 0 rgba(0,0,0,0.45), inset 0 2px 3px rgba(255,255,255,0.25); }
+  .fbtn.press { transform:translateY(2px); box-shadow:0 1px 0 rgba(0,0,0,0.45), inset 0 2px 6px rgba(0,0,0,0.3); filter:brightness(1.15); }
+  .fbtn.x{grid-area:1/2;background:#0a9ac9;} .fbtn.y{grid-area:2/1;background:#12a150;}
+  .fbtn.a{grid-area:2/3;background:#e60012;} .fbtn.b{grid-area:3/2;background:#f2c200;color:#3a2e00;}
+  .screen { width:clamp(78px,24vw,104px); aspect-ratio:4/3; border-radius:10px; background:linear-gradient(180deg,#0c1512,#0a0f0d);
+    border:1px solid rgba(46,230,166,0.25); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; box-shadow:inset 0 0 14px rgba(0,0,0,0.7); }
+  .scr-model { font-size:12px; font-weight:800; color:var(--accent-2); text-align:center; }
+  .scr-speed { font-size:20px; font-weight:800; color:var(--accent-2); font-variant-numeric:tabular-nums; } .scr-speed small { font-size:11px; }
+  .minus-plus { display:flex; gap:14px; }
+  .minus-plus button { width:34px; height:34px; border-radius:50%; border:1px solid var(--line); background:#2a2c36; color:var(--text);
+    font-size:18px; font-weight:800; cursor:pointer; display:grid; place-items:center; touch-action:manipulation; }
+  .minus-plus button:active { background:var(--accent); color:#fff; }
+  .gamepad .hint { text-align:center; margin-top:12px; font-size:11.5px; color:var(--muted); line-height:1.5; } .gamepad .hint b { color:var(--text); }
 
   .telemetry { display:flex; gap:10px; }
   .tcard { flex:1; background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:12px 14px; }
-  .tcard .lbl { font-size:11px; color:var(--muted); font-weight:600; letter-spacing:.3px; }
-  .tcard .val { font-size:22px; font-weight:800; margin-top:3px; font-variant-numeric:tabular-nums; }
-  .tcard .val small { font-size:13px; font-weight:600; color:var(--muted); }
+  .tcard .lbl { font-size:11px; color:var(--muted); font-weight:600; }
+  .tcard .val { font-size:22px; font-weight:800; margin-top:3px; font-variant-numeric:tabular-nums; } .tcard .val small { font-size:13px; color:var(--muted); }
   .bar { height:6px; border-radius:3px; background:var(--surface-2); margin-top:9px; overflow:hidden; position:relative; }
   .bar > i { position:absolute; top:0; bottom:0; left:50%; width:0; background:var(--accent); transition:width .08s, left .08s; }
 
-  .stop {
-    background: linear-gradient(135deg, var(--danger), #ff6b7a);
-    box-shadow:0 8px 20px rgba(255,71,87,0.35);
-  }
-
-  /* Settings */
-  details.settings {
-    background:var(--surface); border:1px solid var(--line); border-radius:14px; overflow:hidden;
-  }
-  details.settings > summary {
-    list-style:none; cursor:pointer; padding:14px 16px; font-weight:700; font-size:14px;
-    display:flex; align-items:center; gap:8px;
-  }
-  details.settings > summary::-webkit-details-marker { display:none; }
-  details.settings > summary::after { content:"▾"; margin-left:auto; color:var(--muted); transition:transform .2s; }
-  details.settings[open] > summary::after { transform:rotate(180deg); }
-  .settings-body { padding:2px 16px 16px; display:flex; flex-direction:column; gap:16px; }
-  .field { display:flex; flex-direction:column; gap:7px; }
-  .field > label { font-size:12.5px; color:var(--muted); font-weight:600; }
-  .seg { display:flex; gap:6px; flex-wrap:wrap; }
-  .seg button {
-    flex:1; min-width:40px; padding:9px 0; border-radius:10px; border:1px solid var(--line);
-    background:var(--surface-2); color:var(--text); font-weight:700; font-size:14px; cursor:pointer;
-  }
-  .seg button.sel { background:var(--accent); color:#fff; border-color:transparent; }
+  .settings-body { display:flex; flex-direction:column; gap:16px; }
   .row { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+  .row label { font-size:13px; font-weight:600; }
   .toggle { position:relative; width:48px; height:28px; flex:none; }
   .toggle input { opacity:0; width:100%; height:100%; margin:0; cursor:pointer; }
   .toggle .track { position:absolute; inset:0; background:var(--surface-2); border:1px solid var(--line); border-radius:999px; transition:.15s; pointer-events:none; }
   .toggle .track::after { content:""; position:absolute; top:3px; left:3px; width:20px; height:20px; border-radius:50%; background:#fff; transition:.15s; }
-  .toggle input:checked + .track { background:var(--accent); border-color:transparent; }
-  .toggle input:checked + .track::after { transform:translateX(20px); }
+  .toggle input:checked + .track { background:var(--accent); border-color:transparent; } .toggle input:checked + .track::after { transform:translateX(20px); }
+  .field { display:flex; flex-direction:column; gap:7px; } .field > label { font-size:12.5px; color:var(--muted); font-weight:600; }
   input[type=range] { width:100%; accent-color:var(--accent); }
   .hint { font-size:11.5px; color:var(--muted); line-height:1.5; }
 
-  /* Hero robot */
-  .hero {
-    background: linear-gradient(180deg, var(--surface) 0%, rgba(23,25,33,0.4) 100%);
-    border:1px solid var(--line); border-radius:18px; padding:6px 10px 12px;
-    display:flex; flex-direction:column; align-items:center; gap:4px; box-shadow:var(--shadow);
-  }
-  .hero svg { width:min(70vw, 260px); height:auto; display:block; }
-  .hero .cap { font-size:12px; color:var(--muted); font-weight:600; }
-  .hero .cap b { color:var(--accent); }
+  .console { background:#0a0c11; border:1px solid var(--line); border-radius:10px; padding:10px; height:96px; overflow-y:auto;
+    font-family:ui-monospace,Menlo,Consolas,monospace; font-size:11px; line-height:1.45; color:#8fb7ab; white-space:pre-wrap; word-break:break-word; }
+  .console:empty::before { content:"허브 메시지가 여기에 표시됩니다…"; color:var(--muted); }
 
-  /* Assembly guide */
-  .guide { background:var(--surface); border:1px solid var(--line); border-radius:14px; overflow:hidden; }
-  .guide > summary {
-    list-style:none; cursor:pointer; padding:14px 16px; font-weight:700; font-size:14px;
-    display:flex; align-items:center; gap:8px;
-  }
-  .guide > summary::-webkit-details-marker { display:none; }
-  .guide > summary::after { content:"▾"; margin-left:auto; color:var(--muted); transition:transform .2s; }
-  .guide[open] > summary::after { transform:rotate(180deg); }
-  .guide-body { padding:0 16px 16px; }
-  ol.steps { list-style:none; counter-reset:s; display:flex; flex-direction:column; gap:12px; }
-  ol.steps > li { counter-increment:s; position:relative; padding-left:38px; font-size:13px; line-height:1.6; color:var(--text); }
-  ol.steps > li::before {
-    content:counter(s); position:absolute; left:0; top:-1px; width:26px; height:26px;
-    background:var(--accent); color:#fff; border-radius:50%; display:grid; place-items:center;
-    font-weight:800; font-size:13px;
-  }
-  ol.steps b { color:#fff; }
-  ol.steps .port { display:inline-block; min-width:20px; text-align:center; background:var(--surface-2); border:1px solid var(--line); border-radius:6px; padding:0 6px; font-weight:800; color:var(--accent); }
-  .guide-body a { color:var(--accent-2); }
-
-  /* Detected ports */
-  .detect { display:flex; align-items:center; gap:8px; flex-wrap:wrap; font-size:12.5px; padding:2px 2px 2px; }
-  .detect .chip { background:var(--surface-2); border:1px solid var(--line); border-radius:8px; padding:4px 9px; font-weight:700; font-size:12px; }
-  .detect .chip.motor { border-color:var(--accent); color:var(--accent); }
-  .detect .muted { color:var(--muted); }
-  .seg button.detected { box-shadow: inset 0 0 0 2px var(--accent-2); }
-  .seg button.detected::after { content:"●"; font-size:8px; color:var(--accent-2); position:relative; top:-7px; left:2px; }
-  .btn-auto { align-self:flex-start; background:var(--surface-2); color:var(--accent-2); border:1px solid rgba(46,230,166,0.4); padding:9px 14px; font-size:13px; border-radius:10px; }
-
-  footer { text-align:center; font-size:11px; color:var(--muted); padding:6px 0 14px; }
-  footer a { color:var(--muted); }
+  footer { text-align:center; font-size:11px; color:var(--muted); padding:6px 0 14px; } footer a { color:var(--muted); }
 </style>
 </head>
 <body>
@@ -276,79 +158,69 @@
   <div class="logo">🤖</div>
   <div>
     <h1>마인드스톰 주행컨트롤러</h1>
-    <p>LEGO® MINDSTORMS® 51515 · Web Bluetooth</p>
+    <p>LEGO® MINDSTORMS® 51515 · Pybricks · Web Bluetooth</p>
   </div>
   <div class="status" id="status"><span class="dot"></span><span id="statusText">연결 안 됨</span></div>
 </header>
 
 <main>
+  <!-- model selector -->
   <div class="hero">
-    <div class="model-stage">
-      <img id="modelImg" class="model-img" src="img/blast.jpg" alt="선택한 51515 모델" draggable="false">
-    </div>
+    <div class="model-stage"><img id="modelImg" class="model-img" src="img/blast.jpg" alt="선택한 51515 모델" draggable="false"></div>
     <div class="cap"><b id="modelName">Blast</b> · <span id="modelTip">두 다리 밑 바퀴로 주행하는 대형 휴머노이드</span></div>
     <div class="modes" id="modes"></div>
   </div>
 
-  <details class="guide" open>
-    <summary>🧱 조립하고 주행 시작하기</summary>
-    <div class="guide-body">
+  <div class="banner" id="webbleWarn">
+    <b>⚠️ 이 브라우저는 Web Bluetooth 미지원</b><br>
+    <b>맥북/PC·갤럭시탭</b> → <b>Chrome</b>으로 여세요. <b>아이폰/아이패드</b> → App Store <b>Bluefy</b> 앱 안에서 이 페이지를 여세요.
+  </div>
+
+  <!-- one-time setup -->
+  <details class="card" id="setupCard" open>
+    <summary>🔧 처음 1회 세팅 (허브 준비)</summary>
+    <div class="card-body">
       <ol class="steps">
-        <li><b>모델 조립 &amp; 선택.</b> 51515 정식 모델(Blast·Charlie·Tricky·Gelo·M.V.P.) 중 하나를 조립하고, 위에서 <b>같은 모델을 선택</b>하세요. 핵심은 <b>좌·우 바퀴를 굴리는 모터 2개</b>입니다.</li>
-        <li><b>모터를 허브에 연결.</b> 두 구동 모터를 아무 포트에나 꽂으세요. 예) 왼쪽 바퀴 → <span class="port">A</span>, 오른쪽 바퀴 → <span class="port">E</span>. 포트는 앱에서 언제든 바꿀 수 있습니다.</li>
-        <li><b>허브 켜고 연결.</b> 허브 가운데 버튼으로 전원을 켜고(LEGO 앱 등 다른 기기와는 연결 해제), 아래 <b>‘허브 연결’</b>을 누르세요.</li>
-        <li><b>포트 자동 감지.</b> 연결되면 어느 포트에 모터가 꽂혔는지 자동으로 표시됩니다. <b>‘감지된 모터로 자동 설정’</b>을 누르면 좌·우 포트가 채워집니다.</li>
-        <li><b>주행!</b> 닌텐도 스타일 컨트롤러의 스틱·D패드로 운전하세요. 앞으로 가야 하는데 회전만 하면 설정에서 <b>방향 반전</b> 토글을 바꾸면 됩니다.</li>
+        <li><b>Pybricks 펌웨어 설치.</b> 컴퓨터/갤럭시탭 <b>크롬</b>에서 <a href="https://code.pybricks.com" target="_blank" rel="noopener">code.pybricks.com</a> 접속 → 화면 안내대로 51515 허브에 Pybricks 설치. LEGO 앱으로 <b>언제든 원래 펌웨어 복구</b> 가능합니다.</li>
+        <li><b>수신 프로그램 올리기.</b> Pybricks Code 편집기에 아래 코드를 붙여넣고, 구동 모터가 꽂힌 포트에 맞게 <span class="port">LEFT_PORT</span>·<span class="port">RIGHT_PORT</span>만 수정한 뒤 <b>▶(다운로드/실행)</b>. 한 번 다운로드하면 허브에 저장됩니다.
+          <div class="codewrap">
+            <button class="copybtn" id="copyCode">복사</button>
+            <pre class="code" id="hubCode"></pre>
+          </div>
+        </li>
+        <li><b>Pybricks Code 연결 해제.</b> 블루투스는 한 번에 한 곳만 연결됩니다. Pybricks Code에서 허브 연결을 끊으세요.</li>
+        <li><b>이 앱에서 연결.</b> 아래 <b>‘허브 연결’</b> → 목록에서 <b>Pybricks Hub</b> 선택. 연결되면 저장된 수신 프로그램이 자동 실행됩니다.</li>
+        <li><b>주행!</b> 컨트롤러로 운전하세요. 앞으로 안 가고 회전만 하면 <b>설정 → 방향 반전</b> 토글을 바꾸면 됩니다.</li>
       </ol>
     </div>
   </details>
 
-  <div class="banner" id="iosBanner">
-    <b>아이폰 / 아이패드 사용자</b><br>
-    iOS Safari·크롬은 Web Bluetooth를 지원하지 않습니다. App Store에서 <b>Bluefy</b>(무료)를 설치하고,
-    <b>Bluefy 안에서 이 페이지를 열어</b> 연결하세요. PC 크롬·안드로이드 크롬에서는 기본 브라우저로 바로 됩니다.
-  </div>
-
   <button class="btn btn-primary" id="connectBtn">🔗 허브 연결</button>
 
-  <div class="detect" id="detect" style="display:none;">
-    <span class="muted">감지된 포트:</span>
-    <span id="detectChips"><span class="muted">—</span></span>
-  </div>
-
+  <!-- gamepad -->
   <div class="gamepad">
     <div class="shoulders">
       <button class="shoulder" id="btnL">L ⟲ 좌회전</button>
       <button class="shoulder" id="btnR">R ⟳ 우회전</button>
     </div>
     <div class="pad-main">
-      <!-- LEFT: analog stick + D-pad -->
       <div class="cluster">
         <div class="pad" id="pad">
-          <span class="arrow up">▲</span><span class="arrow down">▼</span>
-          <span class="arrow left">◀</span><span class="arrow right">▶</span>
+          <span class="arrow up">▲</span><span class="arrow down">▼</span><span class="arrow left">◀</span><span class="arrow right">▶</span>
           <div class="knob" id="knob"></div>
         </div>
         <div class="dpad">
-          <button class="d up"    data-dir="up">▲</button>
-          <button class="d left"  data-dir="left">◀</button>
-          <button class="d mid"   disabled></button>
+          <button class="d up" data-dir="up">▲</button>
+          <button class="d left" data-dir="left">◀</button>
+          <button class="d mid" disabled></button>
           <button class="d right" data-dir="right">▶</button>
-          <button class="d down"  data-dir="down">▼</button>
+          <button class="d down" data-dir="down">▼</button>
         </div>
       </div>
-      <!-- CENTER: screen + minus/plus -->
       <div class="cluster center">
-        <div class="screen">
-          <div class="scr-model" id="scrModel">Blast</div>
-          <div class="scr-speed"><span id="scrSpeed">70</span><small>%</small></div>
-        </div>
-        <div class="minus-plus">
-          <button id="btnMinus" title="속도 -">−</button>
-          <button id="btnPlus"  title="속도 +">＋</button>
-        </div>
+        <div class="screen"><div class="scr-model" id="scrModel">Blast</div><div class="scr-speed"><span id="scrSpeed">70</span><small>%</small></div></div>
+        <div class="minus-plus"><button id="btnMinus" title="속도 -">−</button><button id="btnPlus" title="속도 +">＋</button></div>
       </div>
-      <!-- RIGHT: A/B/X/Y -->
       <div class="cluster">
         <div class="face">
           <button class="fbtn x" id="btnX" data-act="back">X</button>
@@ -358,430 +230,268 @@
         </div>
       </div>
     </div>
-    <div class="hint" id="padHint">스틱·D패드로 주행 · <b>Y</b>전진 <b>X</b>후진 <b>A</b>부스트 <b>B</b>정지 · 키보드 WASD/방향키도 가능</div>
+    <div class="hint">스틱·D패드로 주행 · <b>Y</b>전진 <b>X</b>후진 <b>A</b>부스트 <b>B</b>정지 · 키보드 WASD/방향키/Q·E/스페이스</div>
   </div>
 
   <div class="telemetry">
-    <div class="tcard">
-      <div class="lbl">왼쪽 모터</div>
-      <div class="val"><span id="leftVal">0</span><small>%</small></div>
-      <div class="bar"><i id="leftBar"></i></div>
-    </div>
-    <div class="tcard">
-      <div class="lbl">오른쪽 모터</div>
-      <div class="val"><span id="rightVal">0</span><small>%</small></div>
-      <div class="bar"><i id="rightBar"></i></div>
-    </div>
+    <div class="tcard"><div class="lbl">왼쪽 모터</div><div class="val"><span id="leftVal">0</span><small>%</small></div><div class="bar"><i id="leftBar"></i></div></div>
+    <div class="tcard"><div class="lbl">오른쪽 모터</div><div class="val"><span id="rightVal">0</span><small>%</small></div><div class="bar"><i id="rightBar"></i></div></div>
   </div>
 
   <button class="btn stop" id="stopBtn">■ 긴급 정지</button>
 
-  <details class="settings">
-    <summary>⚙️ 설정 (모터 포트 · 속도)</summary>
-    <div class="settings-body">
-      <button class="btn-auto" id="autoBtn" disabled>🔍 감지된 모터로 자동 설정</button>
-      <div class="field">
-        <label>왼쪽 모터 포트</label>
-        <div class="seg" id="leftPortSeg"></div>
-      </div>
-      <div class="field">
-        <label>오른쪽 모터 포트</label>
-        <div class="seg" id="rightPortSeg"></div>
-      </div>
-      <div class="row">
-        <label style="font-size:13px;font-weight:600;">왼쪽 방향 반전</label>
-        <span class="toggle"><input type="checkbox" id="invLeft"><span class="track"></span></span>
-      </div>
-      <div class="row">
-        <label style="font-size:13px;font-weight:600;">오른쪽 방향 반전</label>
-        <span class="toggle"><input type="checkbox" id="invRight" checked><span class="track"></span></span>
-      </div>
-      <div class="field">
-        <label>최고 속도: <span id="maxSpeedLabel">70</span>%</label>
-        <input type="range" id="maxSpeed" min="20" max="100" value="70" step="5">
-      </div>
-      <p class="hint">
-        주행 베이스는 보통 두 모터가 서로 마주 보게 조립되어, 한쪽을 <b>반전</b>해야 함께 전진합니다.
-        기본값(오른쪽 반전)으로 앞으로 안 가면 반전 토글을 바꿔보세요. 포트는 허브의 A~F 중 모터가 꽂힌 곳을 고르세요.
-      </p>
+  <details class="card">
+    <summary>⚙️ 설정 (속도 · 방향)</summary>
+    <div class="card-body settings-body">
+      <div class="row"><label>왼쪽 방향 반전</label><span class="toggle"><input type="checkbox" id="invLeft"><span class="track"></span></span></div>
+      <div class="row"><label>오른쪽 방향 반전</label><span class="toggle"><input type="checkbox" id="invRight" checked><span class="track"></span></span></div>
+      <div class="field"><label>최고 속도: <span id="maxSpeedLabel">70</span>%</label><input type="range" id="maxSpeed" min="20" max="100" value="70" step="5"></div>
+      <p class="hint">구동 모터가 꽂힌 <b>포트</b>는 허브 프로그램의 <b>LEFT_PORT·RIGHT_PORT</b>에서 지정합니다(위 세팅 코드). 두 모터가 마주 보게 조립되면 한쪽을 <b>반전</b>해야 함께 전진합니다.</p>
     </div>
+  </details>
+
+  <details class="card">
+    <summary>🖥️ 허브 콘솔 (디버그)</summary>
+    <div class="card-body"><div class="console" id="console"></div></div>
   </details>
 </main>
 
-<footer>LEGO® MINDSTORMS® Robot Inventor(51515) · 비공식 컨트롤러 · <a href="../">← 포트폴리오</a></footer>
+<footer>LEGO® MINDSTORMS® Robot Inventor(51515) · Pybricks 비공식 컨트롤러 · <a href="../">← 포트폴리오</a></footer>
 
 <script>
 "use strict";
-/* ─── LEGO Wireless Protocol v3 (LWP3) over BLE ─────────────────────────
-   Hub service:        00001623-1212-efde-1623-785feabcd123
-   Hub characteristic: 00001624-1212-efde-1623-785feabcd123  (write + notify)
-   Motor drive uses Port Output Command (0x81) → WriteDirectModeData (0x51)
-   mode 0x00 = direct power (PWM), payload = signed int8 (-100..100).       */
-const LWP3_SERVICE = "00001623-1212-efde-1623-785feabcd123";
-const LWP3_CHAR    = "00001624-1212-efde-1623-785feabcd123";
-const PORTS = { A:0, B:1, C:2, D:3, E:4, F:5 };
-const PORT_LETTERS = ["A","B","C","D","E","F"];
+/* ─── Pybricks BLE protocol ──────────────────────────────────────────────
+   Service:  c5f50001-8280-46da-89f4-6d8051e4aeef
+   Cmd/Event:c5f50002-8280-46da-89f4-6d8051e4aeef  (write + notify)
+   Commands: StopUserProgram=0, StartUserProgram=1(+progId), WriteStdin=6
+   Events:   StatusReport=0, WriteStdout=1
+   The hub runs a small Pybricks program that reads "L R\n" from stdin and
+   drives two motors; this app streams joystick → stdin.                    */
+const PB_SERVICE = "c5f50001-8280-46da-89f4-6d8051e4aeef";
+const PB_CHAR    = "c5f50002-8280-46da-89f4-6d8051e4aeef";
+const CMD_STOP = 0, CMD_START = 1, CMD_STDIN = 6;
+const EVT_STATUS = 0, EVT_STDOUT = 1;
+const STATUS_PROGRAM_RUNNING_BIT = 6;
 
-/* LWP3 I/O device type IDs (source: pybricks/technical-info assigned-numbers) */
-const DEV_NAMES = {
-  46:"라지 모터", 47:"XL 모터", 48:"미디엄 모터", 49:"라지 모터", 65:"스몰 모터",
-  75:"미디엄 모터", 76:"라지 모터",
-  61:"컬러 센서", 62:"거리 센서", 63:"포스 센서", 64:"LED 매트릭스",
-};
-const MOTOR_IDS = new Set([1, 2, 38, 46, 47, 48, 49, 65, 75, 76]);
-function deviceInfo(typeId) {
-  return { name: DEV_NAMES[typeId] || ("기기 #" + typeId), isMotor: MOTOR_IDS.has(typeId) };
-}
-let detected = {};   // { A: {typeId, name, isMotor}, ... }
+const HUB_CODE = `from pybricks.hubs import PrimeHub
+from pybricks.pupdevices import Motor
+from pybricks.parameters import Port, Color
+from pybricks.tools import wait, StopWatch
+from usys import stdin
+from uselect import poll
 
-let device = null, characteristic = null;
-let canWriteNoResp = false;
-let connected = false;
+# === 구동 모터 포트 (조립에 맞게 수정) ===
+LEFT_PORT = Port.A
+RIGHT_PORT = Port.B
 
-// desired + last-sent motor power (-100..100)
-let want = { left:0, right:0 };
-let sent = { left:null, right:null };
+hub = PrimeHub()
+left = Motor(LEFT_PORT)
+right = Motor(RIGHT_PORT)
+hub.light.on(Color.GREEN)
 
-const cfg = {
-  leftPort: "A",
-  rightPort: "B",
-  invLeft: false,
-  invRight: true,
-  maxSpeed: 70,
-};
+keys = poll()
+keys.register(stdin)
+buf = b""
+watch = StopWatch()
 
-/* ── DOM ── */
-const $ = (id) => document.getElementById(id);
-const statusEl = $("status"), statusText = $("statusText");
-const connectBtn = $("connectBtn"), stopBtn = $("stopBtn");
-const pad = $("pad"), knob = $("knob"), padHint = $("padHint");
+while True:
+    while keys.poll(0):
+        buf += stdin.buffer.read(1)
+    while b"\\n" in buf:
+        line, _, buf = buf.partition(b"\\n")
+        try:
+            a, b2 = line.split()
+            left.dc(max(-100, min(100, int(a))))
+            right.dc(max(-100, min(100, int(b2))))
+            watch.reset()
+        except:
+            pass
+    if watch.time() > 400:
+        left.dc(0)
+        right.dc(0)
+    wait(10)`;
+
+/* ── state ── */
+let device=null, cmdChar=null, connected=false, programRunning=false;
+let busy=false, lastLine="", lastSent=0;
+let want={left:0,right:0};
+const cfg={ invLeft:false, invRight:true, maxSpeed:70 };
+const enc=new TextEncoder(), dec=new TextDecoder();
+
+const $=(id)=>document.getElementById(id);
+const statusEl=$("status"), statusText=$("statusText"), connectBtn=$("connectBtn");
 const leftVal=$("leftVal"), rightVal=$("rightVal"), leftBar=$("leftBar"), rightBar=$("rightBar");
+const consoleEl=$("console");
 
-/* ── Build port selectors ── */
-const segBtns = { left:{}, right:{} };
-function buildSeg(container, side, current, onPick) {
-  container.innerHTML = "";
-  for (const p of Object.keys(PORTS)) {
-    const b = document.createElement("button");
-    b.textContent = p;
-    if (p === current) b.classList.add("sel");
-    b.onclick = () => {
-      [...container.children].forEach(c => c.classList.remove("sel"));
-      b.classList.add("sel");
-      onPick(p);
-    };
-    segBtns[side][p] = b;
-    container.appendChild(b);
-  }
-}
-function selectSeg(side, port) {
-  Object.entries(segBtns[side]).forEach(([p,b]) => b.classList.toggle("sel", p===port));
-}
-buildSeg($("leftPortSeg"),  "left",  cfg.leftPort,  p => cfg.leftPort = p);
-buildSeg($("rightPortSeg"), "right", cfg.rightPort, p => cfg.rightPort = p);
-$("invLeft").onchange  = e => cfg.invLeft  = e.target.checked;
-$("invRight").onchange = e => cfg.invRight = e.target.checked;
-$("maxSpeed").oninput  = e => { cfg.maxSpeed = +e.target.value; $("maxSpeedLabel").textContent = e.target.value; };
-
-/* ── Detected-port UI ── */
-const detectEl = $("detect"), detectChips = $("detectChips"), autoBtn = $("autoBtn");
-function detectedMotorPorts() {
-  return PORT_LETTERS.filter(p => detected[p] && detected[p].isMotor);
-}
-function updateDetectedUI() {
-  const ports = PORT_LETTERS.filter(p => detected[p]);
-  detectEl.style.display = connected ? "flex" : "none";
-  if (ports.length === 0) {
-    detectChips.innerHTML = '<span class="muted">모터를 찾는 중…</span>';
-  } else {
-    detectChips.innerHTML = ports.map(p => {
-      const d = detected[p];
-      return `<span class="chip ${d.isMotor?'motor':''}">${p} · ${d.name}</span>`;
-    }).join("");
-  }
-  // highlight detected motor ports in the selectors
-  for (const side of ["left","right"]) {
-    for (const p of PORT_LETTERS) {
-      const b = segBtns[side][p];
-      if (b) b.classList.toggle("detected", !!(detected[p] && detected[p].isMotor));
-    }
-  }
-  autoBtn.disabled = detectedMotorPorts().length < 2;
-}
-autoBtn.onclick = () => {
-  const m = detectedMotorPorts();
-  if (m.length < 2) return;
-  cfg.leftPort = m[0];  selectSeg("left",  m[0]);
-  cfg.rightPort = m[1]; selectSeg("right", m[1]);
-  autoBtn.textContent = `✅ 왼쪽 ${m[0]} · 오른쪽 ${m[1]}`;
-  setTimeout(() => autoBtn.textContent = "🔍 감지된 모터로 자동 설정", 2500);
+$("hubCode").textContent = HUB_CODE;
+$("copyCode").onclick = async () => {
+  try { await navigator.clipboard.writeText(HUB_CODE); $("copyCode").textContent="복사됨 ✓"; setTimeout(()=>$("copyCode").textContent="복사",1500); }
+  catch(e){ const r=document.createRange(); r.selectNodeContents($("hubCode")); const s=getSelection(); s.removeAllRanges(); s.addRange(r); }
 };
+if (navigator.bluetooth) $("webbleWarn").classList.add("hidden");
 
-/* ── Hide iOS banner where Web Bluetooth exists (Bluefy, Chrome, etc.) ── */
-if (navigator.bluetooth) $("iosBanner").classList.add("hidden");
+function setStatus(t,on){ statusText.textContent=t; statusEl.classList.toggle("on",!!on); }
+function logHub(s){ consoleEl.textContent=(consoleEl.textContent+s).slice(-4000); consoleEl.scrollTop=consoleEl.scrollHeight; }
 
-/* ── LWP3 message builders ── */
-function motorPowerMsg(port, power) {
-  power = Math.max(-100, Math.min(100, Math.round(power)));
-  const signed = power < 0 ? power + 256 : power;      // int8 two's complement
-  //           [len, hubId, type=0x81, port, startup&completion=0x11, subcmd=0x51(WriteDirect), mode=0x00, power]
-  return Uint8Array.of(0x08, 0x00, 0x81, PORTS[port], 0x11, 0x51, 0x00, signed);
-}
-
-async function writeMsg(bytes) {
-  if (!characteristic) return;
-  try {
-    if (canWriteNoResp && characteristic.writeValueWithoutResponse) {
-      await characteristic.writeValueWithoutResponse(bytes);
-    } else {
-      await characteristic.writeValue(bytes);
-    }
-  } catch (e) { /* transient BLE congestion — dropped frame is fine for RC */ }
-}
-
-/* ── Connection ── */
-async function connect() {
-  if (!navigator.bluetooth) {
-    alert("이 브라우저는 Web Bluetooth를 지원하지 않습니다.\n아이폰/아이패드는 App Store의 'Bluefy' 브라우저에서 이 페이지를 열어주세요.");
-    return;
-  }
-  try {
-    setStatus("스캔 중…", false);
-    device = await navigator.bluetooth.requestDevice({
-      filters: [{ services: [LWP3_SERVICE] }],
-      optionalServices: [LWP3_SERVICE],
-    });
+/* ── connection ── */
+async function connect(){
+  if(!navigator.bluetooth){ alert("이 브라우저는 Web Bluetooth를 지원하지 않습니다.\n· 맥북/PC·갤럭시탭: Chrome\n· 아이폰/아이패드: App Store의 'Bluefy' 앱에서 이 페이지를 여세요."); return; }
+  try{
+    setStatus("스캔 중…",false);
+    device = await navigator.bluetooth.requestDevice({ filters:[{ services:[PB_SERVICE] }], optionalServices:[PB_SERVICE] });
     device.addEventListener("gattdisconnected", onDisconnected);
-    setStatus("연결 중…", false);
-    const server = await device.gatt.connect();
-    const service = await server.getPrimaryService(LWP3_SERVICE);
-    characteristic = await service.getCharacteristic(LWP3_CHAR);
-    canWriteNoResp = !!characteristic.properties.writeWithoutResponse;
-    detected = {};
-    characteristic.addEventListener("characteristicvaluechanged", onNotify);
-    try { await characteristic.startNotifications(); } catch(e){}
-    connected = true;
+    setStatus("연결 중…",false);
+    const server=await device.gatt.connect();
+    const service=await server.getPrimaryService(PB_SERVICE);
+    cmdChar=await service.getCharacteristic(PB_CHAR);
+    cmdChar.addEventListener("characteristicvaluechanged", onEvent);
+    await cmdChar.startNotifications();
+    connected=true;
     setStatus(device.name || "허브 연결됨", true);
-    connectBtn.textContent = "🔌 연결 해제";
-    padHint.textContent = "스틱을 드래그해 주행하세요 · 놓으면 정지";
-    updateDetectedUI();
-  } catch (e) {
-    if (e && e.name === "NotFoundError") { setStatus("연결 안 됨", false); return; } // user cancelled
+    connectBtn.textContent="🔌 연결 해제";
+    logHub("[연결됨] 수신 프로그램 시작 요청…\n");
+    await new Promise(r=>setTimeout(r,300));
+    await writeCmd(new Uint8Array([CMD_START, 0]));   // start downloaded program (slot 0)
+  }catch(e){
+    if(e && e.name==="NotFoundError"){ setStatus("연결 안 됨",false); return; }
     console.error(e);
-    alert("연결 실패: " + (e && e.message ? e.message : e) +
-          "\n\n허브 전원이 켜져 있고 (가운데 버튼) 다른 앱(LEGO 앱 등)과 연결되어 있지 않은지 확인하세요.");
-    setStatus("연결 안 됨", false);
+    alert("연결 실패: "+(e && e.message?e.message:e)+"\n\n· 허브 전원 ON\n· Pybricks 펌웨어 설치 + 수신 프로그램 다운로드 완료\n· Pybricks Code 등 다른 앱과 연결 해제");
+    setStatus("연결 안 됨",false);
+  }
+}
+function onDisconnected(){
+  connected=false; cmdChar=null; programRunning=false;
+  want={left:0,right:0}; stickVec=null; for(const k in held) held[k]=false;
+  knob.style.transform="translate(0,0)"; updateTelemetry(0,0);
+  setStatus("연결 끊김",false); connectBtn.textContent="🔗 허브 연결";
+}
+async function disconnect(){
+  try{ await stopMotors(); if(cmdChar) await writeCmd(new Uint8Array([CMD_STOP])); }catch(e){}
+  if(device && device.gatt.connected) device.gatt.disconnect(); else onDisconnected();
+}
+connectBtn.onclick=()=> connected ? disconnect() : connect();
+
+function onEvent(e){
+  const d=new Uint8Array(e.target.value.buffer);
+  if(d[0]===EVT_STDOUT){ logHub(dec.decode(d.slice(1))); }
+  else if(d[0]===EVT_STATUS){
+    const flags=(d[1]|(d[2]<<8)|(d[3]<<16)|(d[4]<<24))>>>0;
+    const run=!!(flags & (1<<STATUS_PROGRAM_RUNNING_BIT));
+    if(run && !programRunning) logHub("[허브] 수신 프로그램 실행 중 ✓\n");
+    programRunning=run;
+    setStatus(run ? "주행 준비 완료" : (connected?"프로그램 대기":"연결 안 됨"), connected);
   }
 }
 
-function onDisconnected() {
-  connected = false; characteristic = null;
-  want = {left:0,right:0}; sent = {left:null,right:null};
-  detected = {};
-  updateTelemetry(0,0);
-  updateDetectedUI();
-  setStatus("연결 끊김", false);
-  connectBtn.textContent = "🔗 허브 연결";
-  stickVec = null;
-  for (const k in held) held[k] = false;
-  knob.style.transform = "translate(0,0)";
+/* ── low-level BLE writes (never overlap) ── */
+async function writeCmd(bytes){
+  if(!cmdChar) return;
+  while(busy) await new Promise(r=>setTimeout(r,4));
+  busy=true;
+  try{ await cmdChar.writeValue(bytes); }catch(e){}
+  busy=false;
+}
+async function sendStdin(text){
+  const p=enc.encode(text); const msg=new Uint8Array(1+p.length); msg[0]=CMD_STDIN; msg.set(p,1);
+  await writeCmd(msg);
 }
 
-/* ── Parse LWP3 notifications: Hub Attached I/O (0x04) → which ports have motors ──
-   [len, hubId, 0x04, portId, event, ...]  event 0x01/0x02=attached, 0x00=detached
-   attached payload bytes 5-6 = I/O type id (uint16 LE)                              */
-function onNotify(e) {
-  const d = new Uint8Array(e.target.value.buffer);
-  if (d.length < 5 || d[2] !== 0x04) return;
-  const letter = PORT_LETTERS[d[3]];
-  if (!letter) return;
-  const event = d[4];
-  if (event === 0x00) {
-    delete detected[letter];
-  } else if (d.length >= 7) {
-    const typeId = d[5] | (d[6] << 8);
-    detected[letter] = { typeId, ...deviceInfo(typeId) };
-  }
-  updateDetectedUI();
+/* ── stream loop: push current drive to hub stdin (on change + heartbeat) ── */
+setInterval(async ()=>{
+  if(!connected || !cmdChar || busy) return;
+  const line = Math.round(want.left)+" "+Math.round(want.right);
+  const now=Date.now();
+  if(line!==lastLine || now-lastSent>200){ lastLine=line; lastSent=now; await sendStdin(line+"\n"); }
+}, 50);
+
+/* ── telemetry ── */
+function updateTelemetry(l,r){
+  l=Math.round(l); r=Math.round(r);
+  leftVal.textContent=l; rightVal.textContent=r;
+  leftBar.style.width=Math.abs(l)/2+"%"; leftBar.style.left=l<0?(50-Math.abs(l)/2)+"%":"50%";
+  rightBar.style.width=Math.abs(r)/2+"%"; rightBar.style.left=r<0?(50-Math.abs(r)/2)+"%":"50%";
+}
+async function stopMotors(){
+  want.left=0; want.right=0; updateTelemetry(0,0);
+  if(cmdChar){ lastLine="0 0"; lastSent=Date.now(); await sendStdin("0 0\n"); }
 }
 
-async function disconnect() {
-  await stopMotors();
-  if (device && device.gatt.connected) device.gatt.disconnect();
-  else onDisconnected();
+/* ── input engine (analog stick + D-pad + shoulders + face buttons) ── */
+const held={ up:false,down:false,left:false,right:false,spinL:false,spinR:false,fwd:false,back:false,boost:false };
+let stickVec=null;
+function setDrive(nx,ny){
+  const scale=held.boost?100:cfg.maxSpeed;
+  let l=ny+nx, r=ny-nx; const m=Math.max(1,Math.abs(l),Math.abs(r)); l/=m; r/=m;
+  want.left=l*scale*(cfg.invLeft?-1:1); want.right=r*scale*(cfg.invRight?-1:1);
+  updateTelemetry(l*scale, r*scale);
 }
-
-connectBtn.onclick = () => connected ? disconnect() : connect();
-
-function setStatus(text, on) {
-  statusText.textContent = text;
-  statusEl.classList.toggle("on", !!on);
+function padMetrics(){ const b=pad.getBoundingClientRect(); return { cx:b.left+b.width/2, cy:b.top+b.height/2, radius:b.width/2 }; }
+function positionKnob(x,y){ const {radius}=padMetrics(); const max=radius*0.62; knob.style.transform=`translate(${x*max}px, ${-y*max}px)`; }
+function recompute(){
+  let x=0,y=0;
+  if(stickVec){ x=stickVec.x; y=stickVec.y; }
+  else { if(held.up)y+=1; if(held.down)y-=1; if(held.left)x-=1; if(held.right)x+=1; if(held.fwd)y+=1; if(held.back)y-=1; }
+  if(held.spinL)x-=1; if(held.spinR)x+=1;
+  const mag=Math.hypot(x,y); if(mag>1){ x/=mag; y/=mag; }
+  positionKnob(x,y); setDrive(x,y);
 }
+const pad=$("pad"), knob=$("knob");
+let dragging=false, pid=null;
+function stickFrom(cx0,cy0){ const {cx,cy,radius}=padMetrics(); const max=radius*0.62;
+  let dx=cx0-cx, dy=cy0-cy; const dist=Math.hypot(dx,dy); if(dist>max){ dx=dx/dist*max; dy=dy/dist*max; }
+  stickVec={ x:dx/max, y:-dy/max }; recompute(); }
+pad.addEventListener("pointerdown",(e)=>{ if(!ensureReady())return; dragging=true; pid=e.pointerId; pad.classList.add("dragging"); pad.setPointerCapture(pid); stickFrom(e.clientX,e.clientY); e.preventDefault(); });
+pad.addEventListener("pointermove",(e)=>{ if(dragging&&e.pointerId===pid) stickFrom(e.clientX,e.clientY); });
+function endDrag(e){ if(!dragging||(pid!==null&&e.pointerId!==pid))return; dragging=false; pid=null; pad.classList.remove("dragging"); stickVec=null; recompute(); }
+pad.addEventListener("pointerup",endDrag); pad.addEventListener("pointercancel",endDrag); pad.addEventListener("lostpointercapture",endDrag);
 
-/* ── Drive mixing (single stick → differential) ── */
-/* ── Unified input state (analog stick + D-pad + shoulders + face buttons) ── */
-const held = { up:false, down:false, left:false, right:false, spinL:false, spinR:false, fwd:false, back:false, boost:false };
-let stickVec = null;   // {x,y} while the analog stick is being dragged
-
-function setStick(nx, ny) {           // nx,ny in [-1,1]; ny up = +forward
-  const turn = nx, throttle = ny;
-  let l = throttle + turn, r = throttle - turn;
-  const m = Math.max(1, Math.abs(l), Math.abs(r));
-  l /= m; r /= m;
-  const scale = held.boost ? 100 : cfg.maxSpeed;
-  want.left  = l * scale * (cfg.invLeft  ? -1 : 1);
-  want.right = r * scale * (cfg.invRight ? -1 : 1);
-  updateTelemetry(l * scale, r * scale);   // show pre-invert (screen-relative) values
+function ensureReady(){ if(!connected){ setStatus("먼저 '허브 연결'을 누르세요", false); return false; } return true; }
+function holdBtn(el,onDown,onUp){ if(!el)return;
+  el.addEventListener("pointerdown",(e)=>{ if(!ensureReady())return; el.classList.add("press"); onDown(); try{el.setPointerCapture(e.pointerId);}catch(_){}
+    e.preventDefault(); });
+  const up=()=>{ el.classList.remove("press"); onUp(); };
+  el.addEventListener("pointerup",up); el.addEventListener("pointercancel",up); el.addEventListener("lostpointercapture",up);
 }
+function bindHold(el,key){ holdBtn(el,()=>{held[key]=true;recompute();},()=>{held[key]=false;recompute();}); }
+document.querySelectorAll(".dpad .d[data-dir]").forEach(b=>bindHold(b,b.dataset.dir));
+bindHold($("btnL"),"spinL"); bindHold($("btnR"),"spinR");
+bindHold($("btnY"),"fwd"); bindHold($("btnX"),"back"); bindHold($("btnA"),"boost");
+holdBtn($("btnB"), allStop, ()=>{});
 
-function updateTelemetry(l, r) {
-  l = Math.round(l); r = Math.round(r);
-  leftVal.textContent = l; rightVal.textContent = r;
-  leftBar.style.width  = Math.abs(l)/2 + "%"; leftBar.style.left  = l<0 ? (50 - Math.abs(l)/2)+"%" : "50%";
-  rightBar.style.width = Math.abs(r)/2 + "%"; rightBar.style.left = r<0 ? (50 - Math.abs(r)/2)+"%" : "50%";
-}
+function allStop(){ stickVec=null; for(const k in held) held[k]=false; document.querySelectorAll(".press").forEach(el=>el.classList.remove("press")); recompute(); stopMotors(); }
+$("stopBtn").onclick=allStop;
 
-async function stopMotors() {
-  want.left = 0; want.right = 0;
-  if (characteristic) { await writeMsg(motorPowerMsg(cfg.leftPort,0)); await writeMsg(motorPowerMsg(cfg.rightPort,0)); }
-  sent.left = 0; sent.right = 0;
-  updateTelemetry(0,0);
-}
-function allStop() {
-  stickVec = null;
-  for (const k in held) held[k] = false;
-  document.querySelectorAll(".press").forEach(el => el.classList.remove("press"));
-  recompute();
-  stopMotors();
-}
-stopBtn.onclick = allStop;
+/* ── speed ── */
+function setSpeed(v){ cfg.maxSpeed=Math.max(20,Math.min(100,v)); $("maxSpeed").value=cfg.maxSpeed; $("maxSpeedLabel").textContent=cfg.maxSpeed; $("scrSpeed").textContent=cfg.maxSpeed; recompute(); }
+$("btnMinus").onclick=()=>setSpeed(cfg.maxSpeed-10); $("btnPlus").onclick=()=>setSpeed(cfg.maxSpeed+10);
+$("maxSpeed").oninput=(e)=>setSpeed(+e.target.value);
+$("invLeft").onchange=(e)=>{cfg.invLeft=e.target.checked; recompute();};
+$("invRight").onchange=(e)=>{cfg.invRight=e.target.checked; recompute();};
 
-/* ── Command loop: send only on change, ~25 Hz ── */
-setInterval(() => {
-  if (!connected || !characteristic) return;
-  if (sent.left !== want.left)  { writeMsg(motorPowerMsg(cfg.leftPort,  want.left));  sent.left  = want.left; }
-  if (sent.right !== want.right){ writeMsg(motorPowerMsg(cfg.rightPort, want.right)); sent.right = want.right; }
-}, 40);
-
-/* ── Core: recompute drive vector from all currently-held inputs ── */
-function padMetrics() { const r = pad.getBoundingClientRect(); return { cx:r.left+r.width/2, cy:r.top+r.height/2, radius:r.width/2 }; }
-function positionKnob(x, y) {
-  const { radius } = padMetrics(); const max = radius * 0.62;
-  knob.style.transform = `translate(${x*max}px, ${-y*max}px)`;
-}
-function recompute() {
-  let x = 0, y = 0;
-  if (stickVec) { x = stickVec.x; y = stickVec.y; }
-  else {
-    if (held.up)   y += 1; if (held.down) y -= 1;
-    if (held.left) x -= 1; if (held.right) x += 1;
-    if (held.fwd)  y += 1; if (held.back) y -= 1;
-  }
-  if (held.spinL) x -= 1; if (held.spinR) x += 1;
-  const mag = Math.hypot(x, y);
-  if (mag > 1) { x /= mag; y /= mag; }
-  positionKnob(x, y);
-  setStick(x, y);
-}
-
-/* ── Analog stick (drag) ── */
-let dragging = false, pid = null;
-function stickFrom(clientX, clientY) {
-  const { cx, cy, radius } = padMetrics(); const max = radius * 0.62;
-  let dx = clientX - cx, dy = clientY - cy;
-  const dist = Math.hypot(dx, dy);
-  if (dist > max) { dx = dx/dist*max; dy = dy/dist*max; }
-  stickVec = { x: dx/max, y: -dy/max };   // screen y down → invert for forward
-  recompute();
-}
-pad.addEventListener("pointerdown", (e) => {
-  if (!connected) { padHint.textContent = "먼저 '허브 연결'을 눌러주세요"; return; }
-  dragging = true; pid = e.pointerId; pad.classList.add("dragging");
-  pad.setPointerCapture(pid); stickFrom(e.clientX, e.clientY); e.preventDefault();
-});
-pad.addEventListener("pointermove", (e) => { if (dragging && e.pointerId===pid) stickFrom(e.clientX, e.clientY); });
-function endDrag(e){ if (!dragging || (pid!==null && e.pointerId!==pid)) return; dragging=false; pid=null; pad.classList.remove("dragging"); stickVec=null; recompute(); }
-pad.addEventListener("pointerup", endDrag);
-pad.addEventListener("pointercancel", endDrag);
-pad.addEventListener("lostpointercapture", endDrag);
-
-/* ── Hold-to-press helper for gamepad buttons ── */
-function holdBtn(el, onDown, onUp) {
-  if (!el) return;
-  const down = (e) => {
-    if (!connected) { padHint.textContent = "먼저 '허브 연결'을 눌러주세요"; return; }
-    el.classList.add("press"); onDown();
-    try { el.setPointerCapture(e.pointerId); } catch(_){}
-    e.preventDefault();
-  };
-  const up = () => { el.classList.remove("press"); onUp(); };
-  el.addEventListener("pointerdown", down);
-  el.addEventListener("pointerup", up);
-  el.addEventListener("pointercancel", up);
-  el.addEventListener("lostpointercapture", up);
-}
-function bindHold(el, key) { holdBtn(el, () => { held[key]=true; recompute(); }, () => { held[key]=false; recompute(); }); }
-
-document.querySelectorAll(".dpad .d[data-dir]").forEach(b => bindHold(b, b.dataset.dir));
-bindHold($("btnL"), "spinL");
-bindHold($("btnR"), "spinR");
-bindHold($("btnY"), "fwd");    // Y = 전진
-bindHold($("btnX"), "back");   // X = 후진
-bindHold($("btnA"), "boost");  // A = 부스트
-holdBtn($("btnB"), allStop, () => {});   // B = 긴급 정지
-
-/* ── Speed −/+ ── */
-function setSpeed(v) {
-  cfg.maxSpeed = Math.max(20, Math.min(100, v));
-  $("maxSpeed").value = cfg.maxSpeed;
-  $("maxSpeedLabel").textContent = cfg.maxSpeed;
-  $("scrSpeed").textContent = cfg.maxSpeed;
-  recompute();
-}
-$("btnMinus").onclick = () => setSpeed(cfg.maxSpeed - 10);
-$("btnPlus").onclick  = () => setSpeed(cfg.maxSpeed + 10);
-
-/* ── Model / mode selector ── */
-const MODELS = [
-  { id:"blast",   name:"Blast",   img:"img/blast.jpg",   tip:"두 다리 밑 바퀴로 주행하는 대형 휴머노이드" },
-  { id:"charlie", name:"Charlie", img:"img/charlie.jpg", tip:"두 바퀴로 움직이는 친근한 로봇" },
-  { id:"tricky",  name:"Tricky",  img:"img/tricky.jpg",  tip:"트레드와 바퀴로 달리는 스포츠 로봇" },
-  { id:"gelo",    name:"Gelo",    img:"img/gelo.jpg",    tip:"네 다리로 기어다니는 크롤러" },
-  { id:"mvp",     name:"M.V.P.",  img:"img/mvp.jpg",     tip:"네 바퀴 차량형 모델" },
+/* ── model selector ── */
+const MODELS=[
+  {id:"blast",name:"Blast",img:"img/blast.jpg",tip:"두 다리 밑 바퀴로 주행하는 대형 휴머노이드"},
+  {id:"charlie",name:"Charlie",img:"img/charlie.jpg",tip:"두 바퀴로 움직이는 친근한 로봇"},
+  {id:"tricky",name:"Tricky",img:"img/tricky.jpg",tip:"트레드와 바퀴로 달리는 스포츠 로봇"},
+  {id:"gelo",name:"Gelo",img:"img/gelo.jpg",tip:"네 다리로 기어다니는 크롤러"},
+  {id:"mvp",name:"M.V.P.",img:"img/mvp.jpg",tip:"네 바퀴 차량형 모델"},
 ];
-const modesEl = $("modes"), modelImg = $("modelImg"), modelName = $("modelName"), modelTip = $("modelTip"), scrModel = $("scrModel");
-function selectModel(id) {
-  const m = MODELS.find(x => x.id === id) || MODELS[0];
-  modelImg.src = m.img; modelImg.alt = m.name + " 모델";
-  modelName.textContent = m.name; modelTip.textContent = m.tip; scrModel.textContent = m.name;
-  [...modesEl.children].forEach(c => c.classList.toggle("sel", c.dataset.id === id));
-}
-MODELS.forEach(m => {
-  const c = document.createElement("button");
-  c.className = "mode-chip"; c.dataset.id = m.id;
-  c.innerHTML = `<img src="${m.img}" alt="${m.name}"><span>${m.name}</span>`;
-  c.onclick = () => selectModel(m.id);
-  modesEl.appendChild(c);
-});
+const modesEl=$("modes"), modelImg=$("modelImg"), modelName=$("modelName"), modelTip=$("modelTip"), scrModel=$("scrModel");
+function selectModel(id){ const m=MODELS.find(x=>x.id===id)||MODELS[0];
+  modelImg.src=m.img; modelImg.alt=m.name+" 모델"; modelName.textContent=m.name; modelTip.textContent=m.tip; scrModel.textContent=m.name;
+  [...modesEl.children].forEach(c=>c.classList.toggle("sel", c.dataset.id===id)); }
+MODELS.forEach(m=>{ const c=document.createElement("button"); c.className="mode-chip"; c.dataset.id=m.id;
+  c.innerHTML=`<img src="${m.img}" alt="${m.name}"><span>${m.name}</span>`; c.onclick=()=>selectModel(m.id); modesEl.appendChild(c); });
 selectModel("blast");
 
-/* ── Keyboard (desktop) ── */
-const KEYMAP = { w:"up", arrowup:"up", s:"down", arrowdown:"down", a:"left", arrowleft:"left", d:"right", arrowright:"right", q:"spinL", e:"spinR", " ":"boost" };
-window.addEventListener("keydown", (e) => {
-  const k = e.key.toLowerCase(); const key = KEYMAP[k];
-  if (!key || !connected) return;
-  if (!held[key]) { held[key] = true; recompute(); }
-  e.preventDefault();
-});
-window.addEventListener("keyup", (e) => {
-  const k = e.key.toLowerCase(); const key = KEYMAP[k];
-  if (!key) return;
-  held[key] = false; recompute();
-});
+/* ── keyboard ── */
+const KEYMAP={ w:"up",arrowup:"up",s:"down",arrowdown:"down",a:"left",arrowleft:"left",d:"right",arrowright:"right",q:"spinL",e:"spinR"," ":"boost" };
+window.addEventListener("keydown",(e)=>{ const k=e.key.toLowerCase(); const key=KEYMAP[k]; if(!key||!connected)return; if(!held[key]){held[key]=true;recompute();} e.preventDefault(); });
+window.addEventListener("keyup",(e)=>{ const k=e.key.toLowerCase(); const key=KEYMAP[k]; if(!key)return; held[key]=false; recompute(); });
 
-/* ── Safety: stop when tab hidden / page unloads ── */
-document.addEventListener("visibilitychange", ()=>{ if (document.hidden && connected) stopMotors(); });
-window.addEventListener("pagehide", ()=>{ if (connected) { try{ characteristic && characteristic.writeValue(motorPowerMsg(cfg.leftPort,0)); }catch(e){} } });
+/* ── safety ── */
+document.addEventListener("visibilitychange",()=>{ if(document.hidden && connected) stopMotors(); });
+window.addEventListener("pagehide",()=>{ if(cmdChar){ try{ cmdChar.writeValue(new Uint8Array([CMD_STDIN,48,32,48,10])); }catch(e){} } }); // "0 0\n"
 </script>
 </body>
 </html>
