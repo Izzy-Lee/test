@@ -1,0 +1,1432 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>그림책 원고</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #efedf3;
+    --page: #fbfaf7;
+    --ink: #2b2731;
+    --ink-soft: #6f6a78;
+    --rose: #b8577a;
+    --rose-soft: #e8c3d2;
+    --line: rgba(43, 39, 49, 0.12);
+    --bar: #ffffff;
+    --ok: #3f9a6a;
+    --warn: #c9762b;
+    --upx: 6px; /* 페이지 너비의 1% (JS가 갱신) */
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  html, body {
+    height: 100%;
+    overflow: hidden;
+    font-family: 'Noto Sans KR', sans-serif;
+    color: var(--ink);
+    background: var(--paper);
+    overscroll-behavior: none;
+  }
+
+  button { font: inherit; color: inherit; cursor: pointer; border: 0; background: none; }
+
+  .screen { display: none; height: 100%; flex-direction: column; }
+  .screen.on { display: flex; }
+
+  /* ── 공통 버튼 ── */
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 10px 16px; border-radius: 999px;
+    background: #fff; border: 1px solid var(--line);
+    font-size: 15px; font-weight: 500; white-space: nowrap;
+  }
+  .btn:active { transform: scale(0.97); }
+  .btn.primary { background: var(--rose); border-color: var(--rose); color: #fff; }
+  .btn.ghost { background: transparent; }
+  .btn.danger { color: #c0392b; }
+  .btn[disabled] { opacity: 0.4; pointer-events: none; }
+
+  /* ── 시작 화면 / 설정 화면 ── */
+  .center-wrap {
+    flex: 1; overflow-y: auto;
+    display: flex; align-items: center; justify-content: center; padding: 24px;
+  }
+  .card {
+    width: min(560px, 100%); background: #fff; border-radius: 22px;
+    padding: 32px 28px; box-shadow: 0 12px 40px rgba(43, 39, 49, 0.1);
+  }
+  .card h1 { font-family: 'Gaegu', cursive; font-size: 34px; margin-bottom: 6px; }
+  .card p.sub { color: var(--ink-soft); font-size: 14px; line-height: 1.7; margin-bottom: 22px; }
+  .field { margin-bottom: 16px; }
+  .field label { display: block; font-size: 13px; font-weight: 500; margin-bottom: 6px; color: var(--ink-soft); }
+  .field input {
+    width: 100%; padding: 13px 15px; border-radius: 12px;
+    border: 1px solid var(--line); background: #fbfafc; font: inherit; font-size: 16px;
+  }
+  .field input:focus { outline: 2px solid var(--rose-soft); border-color: var(--rose); }
+  .code-input { text-transform: uppercase; letter-spacing: 5px; font-weight: 700; text-align: center; }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; }
+  .hint { font-size: 13px; color: var(--ink-soft); line-height: 1.7; }
+  .hint code { background: #f1eff4; padding: 1px 6px; border-radius: 5px; font-size: 12px; }
+
+  .recent { margin-top: 26px; border-top: 1px solid var(--line); padding-top: 18px; }
+  .recent h2 { font-size: 14px; color: var(--ink-soft); margin-bottom: 10px; font-weight: 500; }
+  .recent-item {
+    display: flex; align-items: center; gap: 12px; width: 100%;
+    padding: 12px 14px; border-radius: 12px; text-align: left;
+  }
+  .recent-item:hover { background: #f7f5f9; }
+  .recent-item .t { flex: 1; font-weight: 500; }
+  .recent-item .c { font-size: 12px; letter-spacing: 2px; color: var(--rose); font-weight: 700; }
+
+  /* ── 편집 화면: 상단 ── */
+  .topbar {
+    flex: 0 0 auto; display: flex; align-items: center; gap: 10px;
+    padding: 8px 14px; padding-top: max(8px, env(safe-area-inset-top));
+    background: var(--bar); border-bottom: 1px solid var(--line);
+  }
+  .title-input {
+    flex: 1; min-width: 0; font-family: 'Gaegu', cursive; font-size: 24px; font-weight: 700;
+    border: 0; background: transparent; padding: 4px 6px; border-radius: 8px;
+  }
+  .title-input:focus { outline: none; background: #f6f4f8; }
+  .chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 12px; border-radius: 999px; background: #fdf3f7;
+    color: var(--rose); font-size: 13px; font-weight: 700; letter-spacing: 2px;
+    border: 1px solid var(--rose-soft);
+  }
+  .status { font-size: 12px; color: var(--ink-soft); white-space: nowrap; min-width: 84px; text-align: right; }
+  .status.saving { color: var(--warn); }
+  .status.saved { color: var(--ok); }
+  .status.offline { color: #c0392b; }
+
+  /* ── 편집 화면: 무대 ── */
+  .stage {
+    flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center;
+    padding: 16px; touch-action: none;
+  }
+  .spread {
+    position: relative; display: flex; width: 100%; max-width: 1400px;
+    aspect-ratio: 2 / 1.12; max-height: 100%;
+    background: var(--page); border-radius: 10px;
+    box-shadow: 0 10px 34px rgba(43, 39, 49, 0.16);
+    outline: 1px solid var(--rose-soft); outline-offset: 10px;
+  }
+  .spread::after {
+    content: ''; position: absolute; left: 50%; top: 3%; bottom: 3%; width: 1px;
+    background: var(--line); pointer-events: none;
+  }
+  .page { position: relative; flex: 1 1 50%; overflow: hidden; }
+
+  /* ── 요소 ── */
+  .el {
+    position: absolute; touch-action: none; user-select: none; -webkit-user-select: none;
+  }
+  .el.sel { outline: 2px solid var(--rose); outline-offset: 2px; border-radius: 4px; }
+  .el img { width: 100%; height: 100%; object-fit: contain; display: block; pointer-events: none; }
+  .el .body {
+    width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;
+    padding: calc(var(--upx) * 2.2); border-radius: calc(var(--upx) * 1.6);
+    white-space: pre-wrap; word-break: keep-all; line-height: 1.55; overflow: hidden;
+  }
+  .el.text .body { font-weight: 700; }
+  .el[data-style="white"] .body { background: #fff; box-shadow: 0 2px 10px rgba(43,39,49,0.1); }
+  .el[data-style="dark"] .body { background: #2b2731; color: #fbfaf7; }
+  .el[data-style="outline"] .body { background: rgba(255,255,255,0.72); border: calc(var(--upx) * 0.28) dashed var(--rose); }
+  .el[data-style="plain"] .body { background: transparent; }
+  .el[data-fam="hand"] .body { font-family: 'Gaegu', cursive; font-weight: 700; }
+  .el .body[contenteditable="true"] { outline: none; cursor: text; user-select: text; -webkit-user-select: text; }
+  .el.pending::before {
+    content: '올리는 중…'; position: absolute; top: 4px; left: 4px; z-index: 2;
+    background: rgba(43,39,49,0.75); color: #fff; font-size: 11px; padding: 2px 8px; border-radius: 999px;
+  }
+
+  .handle {
+    position: absolute; width: 30px; height: 30px; border-radius: 50%;
+    background: #fff; border: 2px solid var(--rose); touch-action: none;
+    display: none; z-index: 3;
+  }
+  .el.sel > .handle { display: block; }
+  .handle[data-h="nw"] { left: -15px; top: -15px; cursor: nwse-resize; }
+  .handle[data-h="ne"] { right: -15px; top: -15px; cursor: nesw-resize; }
+  .handle[data-h="sw"] { left: -15px; bottom: -15px; cursor: nesw-resize; }
+  .handle[data-h="se"] { right: -15px; bottom: -15px; cursor: nwse-resize; }
+
+  /* ── 편집 화면: 하단 도구 ── */
+  .toolbar {
+    flex: 0 0 auto; background: var(--bar); border-top: 1px solid var(--line);
+    padding: 10px 14px; padding-bottom: max(10px, env(safe-area-inset-bottom));
+    display: flex; align-items: center; gap: 8px; overflow-x: auto;
+  }
+  .toolbar .spacer { flex: 1; }
+  .tool {
+    display: inline-flex; flex-direction: column; align-items: center; gap: 3px;
+    padding: 7px 13px; border-radius: 14px; border: 1px solid var(--line);
+    background: #fff; font-size: 12px; white-space: nowrap;
+  }
+  .tool:active { background: #f4f1f6; }
+  .tool .swatch {
+    width: 34px; height: 18px; border-radius: 5px; border: 1px solid var(--line);
+  }
+  .tool .swatch.white { background: #fff; box-shadow: 0 1px 4px rgba(0,0,0,.15); }
+  .tool .swatch.dark { background: #2b2731; }
+  .tool .swatch.outline { background: #fff; border: 2px dashed var(--rose); }
+  .tool .ico { font-size: 17px; line-height: 1; }
+  .pager { display: inline-flex; align-items: center; gap: 4px; }
+  .pager .n { font-size: 13px; min-width: 66px; text-align: center; color: var(--ink-soft); }
+
+  /* ── 알림 배너 ── */
+  .banner {
+    position: fixed; left: 50%; transform: translateX(-50%);
+    bottom: calc(84px + env(safe-area-inset-bottom)); z-index: 50;
+    display: none; align-items: center; gap: 12px;
+    background: #2b2731; color: #fbfaf7; padding: 12px 16px; border-radius: 14px;
+    box-shadow: 0 8px 26px rgba(0,0,0,0.25); font-size: 14px; max-width: 92vw;
+  }
+  .banner.on { display: flex; }
+  .banner button { color: #ffd9e6; font-weight: 700; text-decoration: underline; white-space: nowrap; }
+
+  .toast {
+    position: fixed; left: 50%; transform: translateX(-50%); top: 76px; z-index: 60;
+    background: rgba(43,39,49,0.92); color: #fff; padding: 10px 18px; border-radius: 999px;
+    font-size: 14px; opacity: 0; transition: opacity .2s; pointer-events: none;
+  }
+  .toast.on { opacity: 1; }
+
+  /* ── 시트(메뉴) ── */
+  .sheet-back {
+    position: fixed; inset: 0; background: rgba(43,39,49,0.42); z-index: 70;
+    display: none; align-items: flex-end; justify-content: center;
+  }
+  .sheet-back.on { display: flex; }
+  .sheet {
+    width: min(520px, 100%); background: #fff; border-radius: 22px 22px 0 0;
+    padding: 22px 22px calc(22px + env(safe-area-inset-bottom));
+    max-height: 86vh; overflow-y: auto;
+  }
+  .sheet h2 { font-size: 18px; margin-bottom: 4px; }
+  .sheet .grip { width: 42px; height: 4px; border-radius: 2px; background: var(--line); margin: 0 auto 16px; }
+  .sheet-row {
+    display: flex; align-items: center; gap: 12px; width: 100%;
+    padding: 14px 4px; text-align: left; border-bottom: 1px solid var(--line); font-size: 15px;
+  }
+  .sheet-row:last-child { border-bottom: 0; }
+  .sheet-row .ico { font-size: 19px; width: 26px; text-align: center; }
+  .share-box {
+    background: #fdf3f7; border: 1px solid var(--rose-soft); border-radius: 14px;
+    padding: 16px; text-align: center; margin: 12px 0 18px;
+  }
+  .share-box .code {
+    font-size: 34px; font-weight: 700; letter-spacing: 8px; color: var(--rose);
+    font-family: 'Gaegu', cursive;
+  }
+  .share-box .lbl { font-size: 13px; color: var(--ink-soft); margin-bottom: 4px; }
+
+  @media (max-width: 640px) {
+    .title-input { font-size: 19px; }
+    .chip { display: none; }
+    .stage { padding: 10px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ────────── 설정: Apps Script 주소 ────────── -->
+<section id="setupScreen" class="screen">
+  <div class="center-wrap">
+    <div class="card">
+      <h1>먼저 한 번만 연결해요</h1>
+      <p class="sub">
+        A패드에서 쓴 원고를 B패드에서 이어 보려면, 원고를 담아 둘 구글 스프레드시트 주소가 필요해요.<br>
+        같은 폴더의 <code>README.md</code>대로 Apps Script를 배포하고, 나온 <code>/exec</code> 주소를 붙여 넣어 주세요.
+      </p>
+      <div class="field">
+        <label for="apiInput">Apps Script 웹앱 주소</label>
+        <input id="apiInput" type="url" placeholder="https://script.google.com/macros/s/.../exec" autocomplete="off">
+      </div>
+      <div class="row">
+        <button class="btn primary" id="apiSaveBtn">연결하기</button>
+      </div>
+      <p class="hint" style="margin-top:16px">
+        한 번 연결해 두면 이 기기에 기억됩니다. 다른 패드는 시작 화면의 <b>연결 링크 복사</b>로 받은 링크를 열면
+        주소가 자동으로 들어가요.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ────────── 시작 화면 ────────── -->
+<section id="homeScreen" class="screen">
+  <div class="center-wrap">
+    <div class="card">
+      <h1>그림책 원고</h1>
+      <p class="sub">어느 패드에서 열어도 같은 원고가 보여요. 쓰던 자리에서 이어서 고칠 수 있습니다.</p>
+
+      <div class="row" style="margin-bottom:22px">
+        <button class="btn primary" id="newBtn">＋ 새 그림책 만들기</button>
+        <button class="btn ghost" id="settingsBtn">연결 설정</button>
+      </div>
+
+      <div class="field">
+        <label for="codeInput">이미 만든 그림책 열기 (6자리 코드)</label>
+        <input id="codeInput" class="code-input" maxlength="6" placeholder="A B C 1 2 3" autocomplete="off" autocapitalize="characters">
+      </div>
+      <button class="btn" id="openBtn">코드로 열기</button>
+
+      <div class="recent" id="recentWrap" hidden>
+        <h2>이 기기에서 열었던 그림책</h2>
+        <div id="recentList"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ────────── 편집 화면 ────────── -->
+<section id="editorScreen" class="screen">
+  <header class="topbar">
+    <button class="btn ghost" id="backBtn" title="목록으로">←</button>
+    <input id="titleInput" class="title-input" placeholder="그림책 제목" maxlength="60">
+    <span class="chip" id="codeChip"></span>
+    <span class="status" id="statusEl">·</span>
+    <button class="btn ghost" id="menuBtn" title="메뉴">☰</button>
+  </header>
+
+  <div class="stage" id="stage">
+    <div class="spread" id="spread">
+      <div class="page" id="pageL" data-slot="0"></div>
+      <div class="page" id="pageR" data-slot="1"></div>
+    </div>
+  </div>
+
+  <footer class="toolbar" id="toolbar"></footer>
+</section>
+
+<div class="banner" id="banner"><span id="bannerText"></span><button id="bannerBtn"></button></div>
+<div class="toast" id="toast"></div>
+
+<div class="sheet-back" id="sheetBack">
+  <div class="sheet" id="sheet"></div>
+</div>
+
+<input type="file" id="fileInput" accept="image/*" hidden>
+
+<script>
+/* ══════════════════════════════════════════════════════════════
+   설정 / 저장소
+   ══════════════════════════════════════════════════════════════ */
+const LS = {
+  api: 'storybook.apiUrl',
+  device: 'storybook.device',
+  recent: 'storybook.recent',
+  cache: id => 'storybook.cache.' + id
+};
+
+let API_URL = localStorage.getItem(LS.api) || '';
+let DEVICE = localStorage.getItem(LS.device) || '';
+if (!DEVICE) {
+  DEVICE = '패드-' + Math.floor(10 + Math.random() * 89);
+  localStorage.setItem(LS.device, DEVICE);
+}
+
+/* 링크로 넘어온 값 (#id=ABC123&api=...) 을 먼저 흡수 */
+(function absorbHash() {
+  const h = new URLSearchParams(location.hash.replace(/^#/, ''));
+  const api = h.get('api');
+  if (api) {
+    API_URL = api;
+    localStorage.setItem(LS.api, api);
+  }
+})();
+
+/* ══════════════════════════════════════════════════════════════
+   상태
+   ══════════════════════════════════════════════════════════════ */
+let story = null;        // {id,title,version,updatedAt,pages:[{id,els:[]}]}
+let spreadIdx = 0;       // 지금 펼친 장면 (페이지 두 장 묶음)
+let activeSlot = 0;      // 새 글상자/그림이 놓일 쪽 (0=왼쪽, 1=오른쪽)
+let selectedId = null;
+let dirty = false;
+let saving = false;
+let mutSeq = 0;          // 고친 횟수 (저장 도중 덧쓴 내용을 놓치지 않으려고)
+let saveTimer = null;
+let pollTimer = null;
+let lastTouch = Date.now(); // 마지막으로 손댄 시각 (확인 간격 조절용)
+let pendingRemote = null;
+const localImages = new Map();  // 요소 id -> dataURL (업로드 전/캐시)
+const fileCache = new Map();    // fileId -> dataURL
+
+const $ = sel => document.querySelector(sel);
+const uid = () => Math.random().toString(36).slice(2, 9);
+
+/* ══════════════════════════════════════════════════════════════
+   서버 통신
+   ══════════════════════════════════════════════════════════════ */
+async function api(action, params = {}) {
+  if (!API_URL) throw new Error('연결 주소가 없습니다.');
+  const body = JSON.stringify(Object.assign({ action }, params));
+  // text/plain 이어야 프리플라이트 없이 Apps Script로 바로 갑니다.
+  const res = await fetch(API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body
+  });
+  if (!res.ok) throw new Error('서버 응답 오류 (' + res.status + ')');
+  const out = await res.json();
+  return out;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   화면 전환
+   ══════════════════════════════════════════════════════════════ */
+function show(name) {
+  ['setupScreen', 'homeScreen', 'editorScreen'].forEach(s => {
+    $('#' + s).classList.toggle('on', s === name);
+  });
+}
+
+function toast(msg, ms = 1900) {
+  const t = $('#toast');
+  t.textContent = msg;
+  t.classList.add('on');
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => t.classList.remove('on'), ms);
+}
+
+function banner(text, btnText, onClick) {
+  const b = $('#banner');
+  if (!text) { b.classList.remove('on'); return; }
+  $('#bannerText').textContent = text;
+  const btn = $('#bannerBtn');
+  btn.textContent = btnText || '';
+  btn.hidden = !btnText;
+  btn.onclick = () => { b.classList.remove('on'); onClick && onClick(); };
+  b.classList.add('on');
+}
+
+function setStatus(text, cls) {
+  const el = $('#statusEl');
+  el.textContent = text;
+  el.className = 'status ' + (cls || '');
+}
+
+/* ══════════════════════════════════════════════════════════════
+   최근 목록
+   ══════════════════════════════════════════════════════════════ */
+function getRecent() {
+  try { return JSON.parse(localStorage.getItem(LS.recent) || '[]'); } catch (e) { return []; }
+}
+function pushRecent(id, title) {
+  const list = getRecent().filter(r => r.id !== id);
+  list.unshift({ id, title: title || '제목 없음', at: Date.now() });
+  localStorage.setItem(LS.recent, JSON.stringify(list.slice(0, 12)));
+}
+function renderRecent() {
+  const list = getRecent();
+  $('#recentWrap').hidden = list.length === 0;
+  $('#recentList').innerHTML = '';
+  list.forEach(r => {
+    const b = document.createElement('button');
+    b.className = 'recent-item';
+    b.innerHTML = '<span class="t"></span><span class="c"></span>';
+    b.querySelector('.t').textContent = r.title;
+    b.querySelector('.c').textContent = r.id;
+    b.onclick = () => openStory(r.id);
+    $('#recentList').appendChild(b);
+  });
+}
+
+/* ══════════════════════════════════════════════════════════════
+   그림책 만들기 / 열기
+   ══════════════════════════════════════════════════════════════ */
+function blankStory() {
+  return { pages: [newPage(), newPage()] };
+}
+function newPage() {
+  return { id: uid(), els: [] };
+}
+
+async function createStory() {
+  setStatus('만드는 중…', 'saving');
+  try {
+    const data = blankStory();
+    const res = await api('create', {
+      title: '새 그림책',
+      editor: DEVICE,
+      data: JSON.stringify(data)
+    });
+    if (!res.ok) throw new Error(res.error || '만들지 못했어요.');
+    story = { id: res.id, title: '새 그림책', version: res.version, updatedAt: res.updatedAt, pages: data.pages };
+    afterLoad();
+    openShareSheet(true);
+  } catch (e) {
+    toast('만들지 못했어요: ' + e.message, 3200);
+    show('homeScreen');
+  }
+}
+
+async function openStory(id) {
+  id = String(id || '').toUpperCase().trim();
+  if (!id) return;
+  show('editorScreen');
+  setStatus('불러오는 중…', 'saving');
+  try {
+    const res = await api('load', { id });
+    if (!res.ok) throw new Error(res.error || '불러오지 못했어요.');
+    story = parseStory(res.story);
+    afterLoad();
+  } catch (e) {
+    const cached = localStorage.getItem(LS.cache(id));
+    if (cached) {
+      story = JSON.parse(cached);
+      afterLoad();
+      setStatus('오프라인', 'offline');
+      banner('인터넷이 안 잡혀서 이 기기에 저장된 원고를 열었어요.', '다시 시도', () => openStory(id));
+    } else {
+      toast(e.message, 3200);
+      show('homeScreen');
+    }
+  }
+}
+
+function parseStory(raw) {
+  let data = {};
+  try { data = JSON.parse(raw.data || '{}'); } catch (e) { data = {}; }
+  const pages = Array.isArray(data.pages) && data.pages.length ? data.pages : blankStory().pages;
+  return {
+    id: raw.id,
+    title: raw.title || '제목 없음',
+    version: Number(raw.version || 0),
+    updatedAt: raw.updatedAt || '',
+    editor: raw.editor || '',
+    pages
+  };
+}
+
+function afterLoad() {
+  spreadIdx = 0;
+  selectedId = null;
+  dirty = false;
+  pendingRemote = null;
+  location.hash = 'id=' + story.id;
+  pushRecent(story.id, story.title);
+  cacheLocal();
+  $('#titleInput').value = story.title;
+  $('#codeChip').textContent = story.id;
+  show('editorScreen');
+  render();
+  setStatus('저장됨', 'saved');
+  startPolling();
+}
+
+function cacheLocal() {
+  if (!story) return;
+  try { localStorage.setItem(LS.cache(story.id), JSON.stringify(story)); } catch (e) { /* 용량 초과 무시 */ }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   저장 (자동)
+   ══════════════════════════════════════════════════════════════ */
+function markDirty() {
+  dirty = true;
+  mutSeq++;
+  lastTouch = Date.now();
+  cacheLocal();
+  setStatus('저장 중…', 'saving');
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(save, 900);
+}
+
+async function save(force) {
+  if (!story || saving) return;
+  if (!dirty && !force) return;
+  saving = true;
+  const versionAtSend = story.version;
+  // 보내는 사이에 또 고칠 수 있어서, 그때는 저장됨으로 치우지 않습니다.
+  const seqAtSend = mutSeq;
+  try {
+    const res = await api('save', {
+      id: story.id,
+      title: story.title,
+      editor: DEVICE,
+      baseVersion: versionAtSend,
+      force: !!force,
+      data: JSON.stringify({ pages: story.pages })
+    });
+
+    if (res.conflict) {
+      saving = false;
+      handleConflict(res.story);
+      return;
+    }
+    if (!res.ok) throw new Error(res.error || '저장 실패');
+
+    story.version = res.version;
+    story.updatedAt = res.updatedAt;
+    cacheLocal();
+
+    if (mutSeq !== seqAtSend) {
+      // 보내는 동안 더 고쳤으니 곧바로 한 번 더 저장합니다.
+      clearTimeout(saveTimer);
+      saveTimer = setTimeout(save, 250);
+      setStatus('저장 중…', 'saving');
+    } else {
+      dirty = false;
+      setStatus('저장됨', 'saved');
+    }
+  } catch (e) {
+    setStatus('오프라인', 'offline');
+    banner('저장이 안 되고 있어요. 인터넷을 확인해 주세요.', '다시 저장', () => save());
+  } finally {
+    saving = false;
+  }
+}
+
+function handleConflict(remote) {
+  const r = parseStory(remote);
+  const mine = { pages: JSON.parse(JSON.stringify(story.pages)), title: story.title };
+  banner(
+    (remote.editor || '다른 기기') + '에서 방금 원고를 고쳤어요. 어느 쪽을 남길까요?',
+    '상대 원고 보기',
+    () => {
+      applyRemote(r);
+      banner('상대가 고친 원고를 불러왔어요.', '내 원고로 덮기', () => {
+        story.pages = mine.pages;
+        story.title = mine.title;
+        $('#titleInput').value = story.title;
+        render();
+        save(true);
+      });
+    }
+  );
+}
+
+function applyRemote(r) {
+  story.pages = r.pages;
+  story.title = r.title;
+  story.version = r.version;
+  story.updatedAt = r.updatedAt;
+  dirty = false;
+  selectedId = null;
+  spreadIdx = Math.min(spreadIdx, Math.max(0, Math.ceil(story.pages.length / 2) - 1));
+  $('#titleInput').value = story.title;
+  cacheLocal();
+  render();
+  setStatus('저장됨', 'saved');
+}
+
+/* ══════════════════════════════════════════════════════════════
+   다른 기기 변경 감지
+   ══════════════════════════════════════════════════════════════ */
+/**
+ * 한창 고치는 중에는 자주, 손 놓고 있으면 뜸하게 확인합니다.
+ * (Apps Script는 하루 실행 시간이 정해져 있어서 계속 5초마다 두드리면 아깝습니다)
+ */
+function pollDelay() {
+  const idle = Date.now() - lastTouch;
+  if (document.hidden) return 20000;
+  if (idle < 2 * 60000) return 5000;
+  if (idle < 10 * 60000) return 15000;
+  return 45000;
+}
+
+function startPolling() {
+  clearTimeout(pollTimer);
+  const tick = async () => {
+    await poll();
+    pollTimer = setTimeout(tick, pollDelay());
+  };
+  pollTimer = setTimeout(tick, pollDelay());
+}
+
+function stopPolling() {
+  clearTimeout(pollTimer);
+  pollTimer = null;
+}
+
+async function poll() {
+  if (!story || saving || document.hidden) return;
+  try {
+    const res = await api('poll', { id: story.id, version: story.version });
+    if (!res.ok || !res.changed) return;
+    const r = parseStory(res.story);
+    if (r.version <= story.version) return;
+
+    if (dirty || isEditingText()) {
+      // 내가 쓰던 게 있으면 마음대로 덮지 않습니다.
+      pendingRemote = r;
+      banner((res.story.editor || '다른 기기') + '에서 원고를 고쳤어요.', '지금 불러오기', () => {
+        applyRemote(pendingRemote);
+        pendingRemote = null;
+      });
+    } else {
+      applyRemote(r);
+      toast((res.story.editor || '다른 기기') + '에서 고친 내용을 불러왔어요.');
+    }
+  } catch (e) { /* 조용히 넘어갑니다 */ }
+}
+
+function isEditingText() {
+  const a = document.activeElement;
+  return !!(a && a.isContentEditable);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   렌더링
+   ══════════════════════════════════════════════════════════════ */
+function currentPages() {
+  return [story.pages[spreadIdx * 2], story.pages[spreadIdx * 2 + 1]];
+}
+
+function render() {
+  if (!story) return;
+  const pages = currentPages();
+  [$('#pageL'), $('#pageR')].forEach((node, i) => {
+    node.innerHTML = '';
+    const page = pages[i];
+    node.dataset.page = page ? String(spreadIdx * 2 + i) : '';
+    node.style.visibility = page ? 'visible' : 'hidden';
+    if (!page) return;
+    page.els
+      .slice()
+      .sort((a, b) => (a.z || 0) - (b.z || 0))
+      .forEach(el => node.appendChild(buildEl(el)));
+  });
+  renderToolbar();
+  updateUnit();
+}
+
+function buildEl(el) {
+  const node = document.createElement('div');
+  node.className = 'el ' + (el.t === 'text' ? 'text' : 'img');
+  node.dataset.id = el.id;
+  if (el.t === 'text') node.dataset.style = el.s || 'white';
+  node.dataset.fam = el.fam || 'sans';
+  node.style.left = el.x + '%';
+  node.style.top = el.y + '%';
+  node.style.width = el.w + '%';
+  node.style.height = el.h + '%';
+  node.style.zIndex = String(el.z || 1);
+  if (el.id === selectedId) node.classList.add('sel');
+
+  if (el.t === 'text') {
+    const body = document.createElement('div');
+    body.className = 'body';
+    body.style.fontSize = 'calc(var(--upx) * ' + (el.fs || 4) + ')';
+    body.style.textAlign = el.al || 'center';
+    body.textContent = el.tx || '';
+    body.addEventListener('blur', () => {
+      const src = findEl(el.id);
+      if (!src) return;
+      const next = body.innerText.replace(/\u00a0/g, ' ');
+      body.contentEditable = 'false';
+      node.classList.remove('editing');
+      if (next !== src.tx) { src.tx = next; markDirty(); }
+      autoGrow(node, src);
+    });
+    node.appendChild(body);
+  } else {
+    const img = document.createElement('img');
+    img.alt = '';
+    img.draggable = false;
+    setImgSrc(img, el, node);
+    node.appendChild(img);
+  }
+
+  ['nw', 'ne', 'sw', 'se'].forEach(h => {
+    const handle = document.createElement('div');
+    handle.className = 'handle';
+    handle.dataset.h = h;
+    node.appendChild(handle);
+  });
+  return node;
+}
+
+/** 드라이브 직링크 → 실패하면 Apps Script로 내려받기 */
+function setImgSrc(img, el, node) {
+  const local = localImages.get(el.id) || (el.fid && fileCache.get(el.fid));
+  if (local) { img.src = local; return; }
+  if (!el.fid) { node.classList.add('pending'); return; }
+
+  img.src = 'https://lh3.googleusercontent.com/d/' + el.fid + '=w1600';
+  img.onerror = async () => {
+    img.onerror = null;
+    try {
+      const res = await api('imgdata', { fileId: el.fid });
+      if (res.ok) {
+        const url = 'data:' + res.mime + ';base64,' + res.data;
+        fileCache.set(el.fid, url);
+        img.src = url;
+      }
+    } catch (e) { /* 그림만 안 보이고 나머지는 계속 씁니다 */ }
+  };
+}
+
+/** 페이지 너비의 1%를 px로 계산해 글자 크기가 기기마다 같아지게 합니다. */
+function updateUnit() {
+  const w = $('#pageL').getBoundingClientRect().width;
+  if (w > 0) document.documentElement.style.setProperty('--upx', (w / 100) + 'px');
+}
+window.addEventListener('resize', () => { updateUnit(); });
+if (window.ResizeObserver) {
+  new ResizeObserver(updateUnit).observe(document.body);
+}
+
+/* 글이 넘치면 상자를 조금 키웁니다. */
+function autoGrow(node, el) {
+  const body = node.querySelector('.body');
+  if (!body) return;
+  let guard = 0;
+  while (body.scrollHeight > body.clientHeight + 1 && el.h < 92 && guard++ < 60) {
+    el.h += 1.5;
+    node.style.height = el.h + '%';
+  }
+  if (guard > 0) markDirty();
+}
+
+/* ══════════════════════════════════════════════════════════════
+   요소 다루기
+   ══════════════════════════════════════════════════════════════ */
+function findEl(id) {
+  for (const page of story.pages) {
+    const hit = page.els.find(e => e.id === id);
+    if (hit) return hit;
+  }
+  return null;
+}
+function findPageOf(id) {
+  return story.pages.find(p => p.els.some(e => e.id === id));
+}
+function topZ(page) {
+  return page.els.reduce((m, e) => Math.max(m, e.z || 0), 0) + 1;
+}
+/** 새로 놓는 요소가 들어갈 쪽. 마지막으로 누른 쪽을 씁니다. */
+function activePage() {
+  return story.pages[spreadIdx * 2 + activeSlot] || story.pages[spreadIdx * 2];
+}
+
+/** 화면 x좌표가 어느 쪽 페이지 위인지 */
+function slotAtX(clientX) {
+  const r = $('#spread').getBoundingClientRect();
+  return clientX < r.left + r.width / 2 ? 0 : 1;
+}
+
+/** 요소를 반대쪽 페이지로 옮깁니다 (가운데 선을 넘겨 끌었을 때). */
+function movePageIfCrossed(el, node) {
+  const from = Number(node.parentElement.dataset.slot);
+  const box = node.getBoundingClientRect();
+  const to = slotAtX(box.left + box.width / 2);
+  if (to === from) return false;
+
+  const fromPage = story.pages[spreadIdx * 2 + from];
+  const toPage = story.pages[spreadIdx * 2 + to];
+  if (!fromPage || !toPage) return false;
+
+  fromPage.els = fromPage.els.filter(e => e.id !== el.id);
+  el.x += from === 0 ? -100 : 100;
+  el.x = clamp(el.x, -12, 100 - el.w + 12);
+  el.z = topZ(toPage);
+  toPage.els.push(el);
+  return true;
+}
+
+function select(id) {
+  if (selectedId === id) return;
+  selectedId = id;
+  document.querySelectorAll('.el').forEach(n => n.classList.toggle('sel', n.dataset.id === id));
+  renderToolbar();
+}
+
+function addText(styleName) {
+  const page = activePage();
+  if (!page) return;
+  const el = {
+    id: uid(), t: 'text', s: styleName,
+    x: 12, y: 62, w: 62, h: 20, z: topZ(page),
+    tx: '여기에 이야기를 써요.', fs: 4.2, al: 'center', fam: 'sans'
+  };
+  page.els.push(el);
+  markDirty();
+  render();
+  select(el.id);
+}
+
+function addImageElement(dataUrl, ratio) {
+  const page = activePage();
+  if (!page) return null;
+  // 원래 비율 그대로, 페이지에 넉넉히 들어가는 크기로 놓습니다.
+  let w = 46;
+  let h = w / ratio * pageAspect();
+  if (h > 62) { h = 62; w = h * ratio / pageAspect(); }
+  const el = {
+    id: uid(), t: 'img', fid: '', ar: ratio,
+    x: (100 - w) / 2, y: 12, w, h, z: topZ(page)
+  };
+  page.els.push(el);
+  localImages.set(el.id, dataUrl);
+  markDirty();
+  render();
+  select(el.id);
+  return el;
+}
+
+/** 페이지 박스의 가로:세로 비율 (세로 % 계산용) */
+function pageAspect() {
+  const r = $('#pageL').getBoundingClientRect();
+  return r.height > 0 ? r.width / r.height : 1;
+}
+
+function deleteSelected() {
+  if (!selectedId) return;
+  const page = findPageOf(selectedId);
+  if (!page) return;
+  page.els = page.els.filter(e => e.id !== selectedId);
+  localImages.delete(selectedId);
+  selectedId = null;
+  markDirty();
+  render();
+}
+
+function duplicateSelected() {
+  const src = findEl(selectedId);
+  const page = findPageOf(selectedId);
+  if (!src || !page) return;
+  const copy = JSON.parse(JSON.stringify(src));
+  copy.id = uid();
+  copy.x = Math.min(88, copy.x + 4);
+  copy.y = Math.min(88, copy.y + 4);
+  copy.z = topZ(page);
+  page.els.push(copy);
+  if (localImages.has(src.id)) localImages.set(copy.id, localImages.get(src.id));
+  markDirty();
+  render();
+  select(copy.id);
+}
+
+function bringSelected(front) {
+  const el = findEl(selectedId);
+  const page = findPageOf(selectedId);
+  if (!el || !page) return;
+  el.z = front ? topZ(page) : Math.min(0, ...page.els.map(e => e.z || 0)) - 1;
+  markDirty();
+  render();
+}
+
+function scaleSelected(mult) {
+  const el = findEl(selectedId);
+  if (!el) return;
+  const cx = el.x + el.w / 2, cy = el.y + el.h / 2;
+  el.w = clamp(el.w * mult, 6, 100);
+  el.h = clamp(el.h * mult, 5, 100);
+  if (el.t === 'text') el.fs = clamp((el.fs || 4) * mult, 1.6, 14);
+  el.x = clamp(cx - el.w / 2, -6, 100 - el.w + 6);
+  el.y = clamp(cy - el.h / 2, -6, 100 - el.h + 6);
+  markDirty();
+  render();
+}
+
+function setTextProp(key, value) {
+  const el = findEl(selectedId);
+  if (!el || el.t !== 'text') return;
+  el[key] = value;
+  markDirty();
+  render();
+}
+
+const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+
+/* ══════════════════════════════════════════════════════════════
+   제스처: 옮기기 / 크기 조절 / 두 손가락
+   ══════════════════════════════════════════════════════════════ */
+const G = { pts: new Map(), id: null, mode: null, snap: null, moved: false, dir: null };
+
+$('#stage').addEventListener('pointerdown', onDown);
+$('#stage').addEventListener('pointermove', onMove);
+$('#stage').addEventListener('pointerup', onUp);
+$('#stage').addEventListener('pointercancel', onUp);
+
+function onDown(e) {
+  lastTouch = Date.now();
+  const node = e.target.closest('.el');
+  if (!node) {
+    const page = e.target.closest('.page');
+    if (page) activeSlot = Number(page.dataset.slot);
+    if (!isEditingText()) select(null);
+    return;
+  }
+  activeSlot = Number(node.parentElement.dataset.slot);
+  if (node.classList.contains('editing')) return; // 글 고치는 중엔 제스처 없음
+
+  const el = findEl(node.dataset.id);
+  if (!el) return;
+
+  const wasSelected = selectedId === el.id;
+  select(el.id);
+
+  G.pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  try { e.target.setPointerCapture(e.pointerId); } catch (err) { /* 붙잡지 못해도 계속 */ }
+
+  if (G.pts.size === 1) {
+    const handle = e.target.closest('.handle');
+    G.mode = handle ? 'resize' : 'move';
+    G.dir = handle ? handle.dataset.h : null;
+    G.id = el.id;
+    G.moved = false;
+    G.wasSelected = wasSelected;
+    G.snap = snapshot(el, node);
+    if (G.mode === 'move') {
+      // 가운데 선을 넘겨 반대쪽 페이지로 끌 수 있게 잠시 넘침을 풀어 줍니다.
+      node.parentElement.style.overflow = 'visible';
+      node.parentElement.style.zIndex = '5';
+    }
+  } else if (G.pts.size === 2) {
+    const [a, b] = [...G.pts.values()];
+    G.mode = 'pinch';
+    G.moved = true;
+    G.snap = Object.assign(snapshot(el, node), {
+      dist: Math.hypot(a.x - b.x, a.y - b.y) || 1
+    });
+  }
+  e.preventDefault();
+}
+
+function snapshot(el, node) {
+  const page = node.parentElement.getBoundingClientRect();
+  return { x: el.x, y: el.y, w: el.w, h: el.h, fs: el.fs || 4, page, start: [...G.pts.values()][0] };
+}
+
+function onMove(e) {
+  if (!G.mode || !G.pts.has(e.pointerId)) return;
+  G.pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  const el = findEl(G.id);
+  if (!el) return;
+  const node = document.querySelector('.el[data-id="' + G.id + '"]');
+  if (!node) return;
+  const s = G.snap;
+
+  if (G.mode === 'pinch' && G.pts.size >= 2) {
+    const [a, b] = [...G.pts.values()];
+    const dist = Math.hypot(a.x - b.x, a.y - b.y) || 1;
+    const k = clamp(dist / s.dist, 0.2, 6);
+    const cx = s.x + s.w / 2, cy = s.y + s.h / 2;
+    el.w = clamp(s.w * k, 6, 130);
+    el.h = clamp(s.h * k, 5, 130);
+    if (el.t === 'text') el.fs = clamp(s.fs * k, 1.6, 16);
+    el.x = cx - el.w / 2;
+    el.y = cy - el.h / 2;
+  } else if (G.mode === 'move') {
+    const p = [...G.pts.values()][0];
+    const dx = (p.x - s.start.x) / s.page.width * 100;
+    const dy = (p.y - s.start.y) / s.page.height * 100;
+    if (Math.abs(p.x - s.start.x) > 4 || Math.abs(p.y - s.start.y) > 4) G.moved = true;
+    // 가로는 옆 페이지까지 넉넉히 (손 뗄 때 그 쪽 페이지로 옮겨집니다)
+    el.x = clamp(s.x + dx, -112, 212 - s.w);
+    el.y = clamp(s.y + dy, -12, 100 - s.h + 12);
+  } else if (G.mode === 'resize') {
+    const p = [...G.pts.values()][0];
+    const dx = (p.x - s.start.x) / s.page.width * 100;
+    const dy = (p.y - s.start.y) / s.page.height * 100;
+    if (Math.abs(dx) > 0.4 || Math.abs(dy) > 0.4) G.moved = true;
+
+    const east = G.dir === 'ne' || G.dir === 'se';
+    const south = G.dir === 'se' || G.dir === 'sw';
+    let w = clamp(east ? s.w + dx : s.w - dx, 6, 130);
+    let h = clamp(south ? s.h + dy : s.h - dy, 5, 130);
+
+    if (el.t === 'img') {
+      // 그림은 비율을 지킵니다.
+      const k = Math.max(w / s.w, h / s.h);
+      w = clamp(s.w * k, 6, 130);
+      h = clamp(s.h * k, 5, 130);
+    } else {
+      el.fs = clamp(s.fs * (w / s.w), 1.6, 16);
+    }
+    el.w = w;
+    el.h = h;
+    el.x = east ? s.x : s.x + (s.w - w);
+    el.y = south ? s.y : s.y + (s.h - h);
+  }
+
+  applyGeom(node, el);
+  e.preventDefault();
+}
+
+function applyGeom(node, el) {
+  node.style.left = el.x + '%';
+  node.style.top = el.y + '%';
+  node.style.width = el.w + '%';
+  node.style.height = el.h + '%';
+  const body = node.querySelector('.body');
+  if (body && el.t === 'text') body.style.fontSize = 'calc(var(--upx) * ' + el.fs + ')';
+}
+
+function onUp(e) {
+  if (!G.pts.has(e.pointerId)) return;
+  G.pts.delete(e.pointerId);
+  if (G.pts.size > 0) return;
+
+  const el = findEl(G.id);
+  const node = document.querySelector('.el[data-id="' + G.id + '"]');
+  const wasMoved = G.moved;
+  const wasSelected = G.wasSelected;
+  const mode = G.mode;
+  G.mode = null; G.snap = null; G.dir = null;
+
+  if (node && node.parentElement) {
+    node.parentElement.style.overflow = '';
+    node.parentElement.style.zIndex = '';
+  }
+  if (!el) return;
+
+  if (wasMoved) {
+    if (mode === 'move' && node) {
+      const crossed = movePageIfCrossed(el, node);
+      el.x = clamp(el.x, -12, 100 - el.w + 12);
+      if (crossed) { markDirty(); render(); return; }
+      applyGeom(node, el);
+    }
+    markDirty();
+    return;
+  }
+  // 움직이지 않은 탭: 이미 골라 둔 글상자면 글 고치기로 들어갑니다.
+  if (mode === 'move' && wasSelected && el.t === 'text') {
+    startEditing(el.id);
+  }
+}
+
+function startEditing(id) {
+  const node = document.querySelector('.el[data-id="' + id + '"]');
+  if (!node) return;
+  const body = node.querySelector('.body');
+  if (!body) return;
+  node.classList.add('editing');
+  body.contentEditable = 'true';
+  body.focus();
+  const range = document.createRange();
+  range.selectNodeContents(body);
+  const sel = window.getSelection();
+  sel.removeAllRanges();
+  sel.addRange(range);
+}
+
+/* 더블탭으로도 바로 글 고치기 */
+$('#stage').addEventListener('dblclick', e => {
+  const node = e.target.closest('.el');
+  if (!node) return;
+  const el = findEl(node.dataset.id);
+  if (el && el.t === 'text') startEditing(el.id);
+});
+
+/* ══════════════════════════════════════════════════════════════
+   그림 넣기
+   ══════════════════════════════════════════════════════════════ */
+$('#fileInput').addEventListener('change', async e => {
+  const file = e.target.files && e.target.files[0];
+  e.target.value = '';
+  if (!file) return;
+  toast('그림을 넣는 중이에요…');
+  try {
+    const { dataUrl, ratio } = await downscale(file, 1600, 0.82);
+    const el = addImageElement(dataUrl, ratio);
+    if (el) uploadImage(el, dataUrl);
+  } catch (err) {
+    toast('그림을 넣지 못했어요: ' + err.message, 3000);
+  }
+});
+
+/** 패드 사진은 그대로 올리면 너무 커서 줄여서 보냅니다. */
+function downscale(file, maxSide, quality) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error('파일을 읽지 못했어요.'));
+    reader.onload = () => {
+      const img = new Image();
+      img.onerror = () => reject(new Error('그림 파일이 아닌 것 같아요.'));
+      img.onload = () => {
+        const k = Math.min(1, maxSide / Math.max(img.width, img.height));
+        const w = Math.round(img.width * k);
+        const h = Math.round(img.height * k);
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        // 투명 배경은 흰색으로 깔아 줍니다 (JPEG 변환).
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, w, h);
+        ctx.drawImage(img, 0, 0, w, h);
+        resolve({ dataUrl: canvas.toDataURL('image/jpeg', quality), ratio: w / h });
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+async function uploadImage(el, dataUrl) {
+  const base64 = dataUrl.split(',')[1];
+  try {
+    const res = await api('upload', { data: base64, mime: 'image/jpeg', name: 'story.jpg' });
+    if (!res.ok) throw new Error(res.error || '올리지 못했어요.');
+    const live = findEl(el.id);
+    if (!live) return;
+    live.fid = res.fileId;
+    fileCache.set(res.fileId, dataUrl);
+    const node = document.querySelector('.el[data-id="' + el.id + '"]');
+    if (node) node.classList.remove('pending');
+    markDirty();
+    toast('그림을 넣었어요.');
+  } catch (e) {
+    banner('그림을 서버에 올리지 못해서 다른 패드에서는 아직 안 보여요.', '다시 올리기', () => uploadImage(el, dataUrl));
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   하단 도구 모음
+   ══════════════════════════════════════════════════════════════ */
+function renderToolbar() {
+  const bar = $('#toolbar');
+  bar.innerHTML = '';
+  const el = findEl(selectedId);
+
+  if (el) {
+    add(bar, '작게', '−', () => scaleSelected(0.88));
+    add(bar, '크게', '＋', () => scaleSelected(1.14));
+    if (el.t === 'text') {
+      addSwatch(bar, 'white', '흰 상자', () => setTextProp('s', 'white'));
+      addSwatch(bar, 'dark', '진한 상자', () => setTextProp('s', 'dark'));
+      addSwatch(bar, 'outline', '테두리', () => setTextProp('s', 'outline'));
+      add(bar, el.fam === 'hand' ? '또박또박' : '손글씨', '✎',
+          () => setTextProp('fam', el.fam === 'hand' ? 'sans' : 'hand'));
+      const next = { left: 'center', center: 'right', right: 'left' }[el.al || 'center'];
+      add(bar, '정렬', { left: '⟸', center: '≡', right: '⟹' }[el.al || 'center'],
+          () => setTextProp('al', next));
+    }
+    add(bar, '앞으로', '⬆', () => bringSelected(true));
+    add(bar, '뒤로', '⬇', () => bringSelected(false));
+    add(bar, '복제', '⧉', duplicateSelected);
+    add(bar, '지우기', '🗑', deleteSelected);
+    const sp = document.createElement('span'); sp.className = 'spacer'; bar.appendChild(sp);
+    add(bar, '선택 해제', '✓', () => select(null));
+    return;
+  }
+
+  addSwatch(bar, 'white', '흰 상자', () => addText('white'));
+  addSwatch(bar, 'dark', '진한 상자', () => addText('dark'));
+  addSwatch(bar, 'outline', '테두리', () => addText('outline'));
+  add(bar, '그림 넣기', '🖼', () => $('#fileInput').click());
+
+  const sp = document.createElement('span'); sp.className = 'spacer'; bar.appendChild(sp);
+
+  const pager = document.createElement('div');
+  pager.className = 'pager';
+  const total = Math.ceil(story.pages.length / 2);
+  const prev = mkTool('앞 장면', '◀', () => { if (spreadIdx > 0) { spreadIdx--; select(null); render(); } });
+  const nlab = document.createElement('span');
+  nlab.className = 'n';
+  nlab.textContent = (spreadIdx + 1) + ' / ' + total + ' 장면';
+  const next = mkTool('뒷 장면', '▶', () => { if (spreadIdx < total - 1) { spreadIdx++; select(null); render(); } });
+  if (spreadIdx === 0) prev.disabled = true;
+  if (spreadIdx >= total - 1) next.disabled = true;
+  pager.append(prev, nlab, next);
+  bar.appendChild(pager);
+
+  add(bar, '장면 추가', '＋', () => {
+    story.pages.push(newPage(), newPage());
+    spreadIdx = Math.ceil(story.pages.length / 2) - 1;
+    markDirty();
+    render();
+  });
+}
+
+function mkTool(label, ico, onClick) {
+  const b = document.createElement('button');
+  b.className = 'tool';
+  b.innerHTML = '<span class="ico"></span><span class="lbl"></span>';
+  b.querySelector('.ico').textContent = ico;
+  b.querySelector('.lbl').textContent = label;
+  b.onclick = onClick;
+  return b;
+}
+function add(bar, label, ico, onClick) { bar.appendChild(mkTool(label, ico, onClick)); }
+function addSwatch(bar, kind, label, onClick) {
+  const b = document.createElement('button');
+  b.className = 'tool';
+  b.innerHTML = '<span class="swatch"></span><span class="lbl"></span>';
+  b.querySelector('.swatch').classList.add(kind);
+  b.querySelector('.lbl').textContent = label;
+  b.onclick = onClick;
+  bar.appendChild(b);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   메뉴 시트
+   ══════════════════════════════════════════════════════════════ */
+function openSheet(html, wire) {
+  $('#sheet').innerHTML = '<div class="grip"></div>' + html;
+  $('#sheetBack').classList.add('on');
+  wire && wire($('#sheet'));
+}
+function closeSheet() { $('#sheetBack').classList.remove('on'); }
+$('#sheetBack').addEventListener('click', e => { if (e.target.id === 'sheetBack') closeSheet(); });
+
+function shareLink() {
+  return location.origin + location.pathname + '#id=' + story.id + '&api=' + encodeURIComponent(API_URL);
+}
+
+function openShareSheet(isNew) {
+  openSheet(
+    '<h2>' + (isNew ? '그림책이 만들어졌어요' : '다른 패드에서 이어 하기') + '</h2>' +
+    '<div class="share-box"><div class="lbl">그림책 코드</div><div class="code">' + story.id + '</div></div>' +
+    '<p class="hint">다른 패드에서 이 앱을 열고 코드를 넣으면 지금 원고가 그대로 보여요. ' +
+    '아래 링크를 보내면 코드를 넣지 않아도 바로 열립니다.</p>' +
+    '<div class="row" style="margin-top:16px">' +
+    '<button class="btn primary" id="copyLink">연결 링크 복사</button>' +
+    '<button class="btn" id="copyCode">코드 복사</button>' +
+    '<button class="btn ghost" id="closeSheet">닫기</button>' +
+    '</div>',
+    root => {
+      root.querySelector('#copyLink').onclick = () => copy(shareLink(), '링크를 복사했어요.');
+      root.querySelector('#copyCode').onclick = () => copy(story.id, '코드를 복사했어요.');
+      root.querySelector('#closeSheet').onclick = closeSheet;
+    }
+  );
+}
+
+async function copy(text, msg) {
+  try {
+    await navigator.clipboard.writeText(text);
+    toast(msg);
+  } catch (e) {
+    window.prompt('길게 눌러 복사해 주세요', text);
+  }
+}
+
+$('#menuBtn').onclick = () => {
+  const t = story.updatedAt ? new Date(story.updatedAt).toLocaleString('ko-KR') : '아직 없음';
+  openSheet(
+    '<h2>' + (story.title || '그림책') + '</h2>' +
+    '<p class="hint">마지막 저장: ' + t + (story.editor ? ' · ' + story.editor : '') + '</p>' +
+    '<button class="sheet-row" id="mShare"><span class="ico">🔗</span>다른 패드에서 이어 하기 (코드 · 링크)</button>' +
+    '<button class="sheet-row" id="mSave"><span class="ico">💾</span>지금 저장하기</button>' +
+    '<button class="sheet-row" id="mReload"><span class="ico">↻</span>서버에서 다시 불러오기</button>' +
+    '<button class="sheet-row" id="mDelPage"><span class="ico">🗑</span>이 장면 지우기</button>' +
+    '<button class="sheet-row" id="mName"><span class="ico">🏷</span>이 패드 이름 바꾸기 (' + DEVICE + ')</button>' +
+    '<button class="sheet-row" id="mHome"><span class="ico">←</span>목록으로 나가기</button>',
+    root => {
+      root.querySelector('#mShare').onclick = () => openShareSheet(false);
+      root.querySelector('#mSave').onclick = () => { closeSheet(); save(true); };
+      root.querySelector('#mReload').onclick = () => { closeSheet(); openStory(story.id); };
+      root.querySelector('#mDelPage').onclick = () => { closeSheet(); deleteSpread(); };
+      root.querySelector('#mName').onclick = () => {
+        const name = window.prompt('이 패드를 뭐라고 부를까요?', DEVICE);
+        if (name) { DEVICE = name.trim().slice(0, 20); localStorage.setItem(LS.device, DEVICE); }
+        closeSheet();
+      };
+      root.querySelector('#mHome').onclick = () => { closeSheet(); goHome(); };
+    }
+  );
+};
+
+function deleteSpread() {
+  if (story.pages.length <= 2) { toast('마지막 장면은 지울 수 없어요.'); return; }
+  if (!window.confirm('이 장면(두 쪽)을 지울까요?')) return;
+  story.pages.splice(spreadIdx * 2, 2);
+  spreadIdx = Math.min(spreadIdx, Math.ceil(story.pages.length / 2) - 1);
+  selectedId = null;
+  markDirty();
+  render();
+}
+
+/* ══════════════════════════════════════════════════════════════
+   화면 이동 / 마무리
+   ══════════════════════════════════════════════════════════════ */
+async function goHome() {
+  if (dirty) await save();
+  stopPolling();
+  story = null;
+  location.hash = '';
+  banner(null);
+  renderRecent();
+  show('homeScreen');
+}
+
+$('#backBtn').onclick = goHome;
+
+$('#titleInput').addEventListener('input', e => {
+  if (!story) return;
+  story.title = e.target.value;
+  pushRecent(story.id, story.title);
+  markDirty();
+});
+
+$('#newBtn').onclick = () => { show('editorScreen'); createStory(); };
+$('#openBtn').onclick = () => openStory($('#codeInput').value);
+$('#codeInput').addEventListener('keydown', e => { if (e.key === 'Enter') openStory(e.target.value); });
+$('#settingsBtn').onclick = () => { $('#apiInput').value = API_URL; show('setupScreen'); };
+
+$('#apiSaveBtn').onclick = async () => {
+  const url = $('#apiInput').value.trim();
+  if (!/^https:\/\/script\.google\.com\/.+\/exec/.test(url)) {
+    toast('Apps Script의 /exec 로 끝나는 주소를 넣어 주세요.', 3000);
+    return;
+  }
+  API_URL = url;
+  try {
+    const res = await api('ping');
+    if (!res.ok) throw new Error('연결은 됐지만 응답이 이상해요.');
+  } catch (e) {
+    toast('연결하지 못했어요: ' + e.message, 3200);
+    return;
+  }
+  localStorage.setItem(LS.api, url);
+  toast('연결됐어요.');
+  renderRecent();
+  show('homeScreen');
+};
+
+/* 나가기 전 마지막 저장 */
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    if (dirty) save();
+  } else if (story) {
+    // 다시 돌아오면 바로 한 번 확인합니다.
+    lastTouch = Date.now();
+    poll();
+    startPolling();
+  }
+});
+window.addEventListener('pagehide', () => {
+  if (!story || !dirty || !API_URL) return;
+  const body = JSON.stringify({
+    action: 'save', id: story.id, title: story.title, editor: DEVICE,
+    baseVersion: story.version, data: JSON.stringify({ pages: story.pages })
+  });
+  try {
+    navigator.sendBeacon(API_URL, new Blob([body], { type: 'text/plain;charset=utf-8' }));
+  } catch (e) { /* 무시 */ }
+});
+
+/* ══════════════════════════════════════════════════════════════
+   시작
+   ══════════════════════════════════════════════════════════════ */
+(function boot() {
+  renderRecent();
+  const h = new URLSearchParams(location.hash.replace(/^#/, ''));
+  const id = h.get('id');
+  if (!API_URL) {
+    $('#apiInput').value = '';
+    show('setupScreen');
+  } else if (id) {
+    openStory(id);
+  } else {
+    show('homeScreen');
+  }
+})();
+</script>
+</body>
+</html>
