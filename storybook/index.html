@@ -754,7 +754,7 @@ function setImgSrc(img, el, node) {
   if (local) { img.src = local; return; }
   if (!el.fid) { node.classList.add('pending'); return; }
 
-  img.src = 'https://lh3.googleusercontent.com/d/' + el.fid + '=w1600';
+  img.src = 'https://lh3.googleusercontent.com/d/' + el.fid + '=w2048';
   img.onerror = async () => {
     img.onerror = null;
     try {
@@ -1132,45 +1132,76 @@ $('#fileInput').addEventListener('change', async e => {
   if (!file) return;
   toast('그림을 넣는 중이에요…');
   try {
-    const { dataUrl, ratio } = await downscale(file, 1600, 0.82);
-    const el = addImageElement(dataUrl, ratio);
-    if (el) uploadImage(el, dataUrl);
+    const shot = await prepare(file);
+    const el = addImageElement(shot.dataUrl, shot.ratio);
+    if (el) uploadImage(el, shot.dataUrl, shot.mime);
   } catch (err) {
     toast('그림을 넣지 못했어요: ' + err.message, 3000);
   }
 });
 
-/** 패드 사진은 그대로 올리면 너무 커서 줄여서 보냅니다. */
-function downscale(file, maxSide, quality) {
+const MAX_SIDE = 2048;      // 이보다 큰 그림만 줄입니다
+const KEEP_BYTES = 3500000; // 원본이 이보다 작으면 손 안 대고 그대로 올립니다
+
+/**
+ * 그림을 올릴 수 있는 크기로 다듬습니다.
+ *
+ * 손그림·펜 선은 JPEG로 바꾸면 선 가장자리가 뭉개지고 검은 선이 회색으로 뜹니다.
+ * 그래서 (1) 작은 파일은 아예 손대지 않고, (2) 줄여야 하면 PNG(무손실)와
+ * JPEG를 둘 다 만들어 본 뒤 지나치게 커지지 않는 선에서 PNG를 고릅니다.
+ */
+function prepare(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onerror = () => reject(new Error('파일을 읽지 못했어요.'));
     reader.onload = () => {
+      const src = reader.result;
       const img = new Image();
       img.onerror = () => reject(new Error('그림 파일이 아닌 것 같아요.'));
       img.onload = () => {
-        const k = Math.min(1, maxSide / Math.max(img.width, img.height));
+        const big = Math.max(img.width, img.height);
+
+        // 원본이 충분히 작으면 그대로. 다시 저장하지 않으니 화질이 하나도 안 깎입니다.
+        if (big <= MAX_SIDE && src.length * 0.75 <= KEEP_BYTES) {
+          resolve({ dataUrl: src, ratio: img.width / img.height, mime: file.type || 'image/png' });
+          return;
+        }
+
+        const k = MAX_SIDE / big;
         const w = Math.round(img.width * k);
         const h = Math.round(img.height * k);
         const canvas = document.createElement('canvas');
         canvas.width = w; canvas.height = h;
         const ctx = canvas.getContext('2d');
-        // 투명 배경은 흰색으로 깔아 줍니다 (JPEG 변환).
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(0, 0, w, h);
-        ctx.drawImage(img, 0, 0, w, h);
-        resolve({ dataUrl: canvas.toDataURL('image/jpeg', quality), ratio: w / h });
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+        ctx.drawImage(img, 0, 0, w, h); // 투명 배경은 투명한 채로 둡니다
+
+        const png = canvas.toDataURL('image/png');
+        const jpg = canvas.toDataURL('image/jpeg', 0.92);
+        // 선 그림은 PNG가 오히려 작습니다. 사진처럼 PNG가 훨씬 클 때만 JPEG를 씁니다.
+        const usePng = png.length <= Math.max(jpg.length * 1.6, 900000);
+        resolve({
+          dataUrl: usePng ? png : jpg,
+          ratio: w / h,
+          mime: usePng ? 'image/png' : 'image/jpeg'
+        });
       };
-      img.src = reader.result;
+      img.src = src;
     };
     reader.readAsDataURL(file);
   });
 }
 
-async function uploadImage(el, dataUrl) {
+async function uploadImage(el, dataUrl, mime) {
   const base64 = dataUrl.split(',')[1];
+  mime = mime || (dataUrl.slice(5).split(';')[0]) || 'image/png';
   try {
-    const res = await api('upload', { data: base64, mime: 'image/jpeg', name: 'story.jpg' });
+    const res = await api('upload', {
+      data: base64,
+      mime: mime,
+      name: 'story.' + (mime === 'image/png' ? 'png' : 'jpg')
+    });
     if (!res.ok) throw new Error(res.error || '올리지 못했어요.');
     const live = findEl(el.id);
     if (!live) return;
@@ -1181,7 +1212,7 @@ async function uploadImage(el, dataUrl) {
     markDirty();
     toast('그림을 넣었어요.');
   } catch (e) {
-    banner('그림을 서버에 올리지 못해서 다른 패드에서는 아직 안 보여요.', '다시 올리기', () => uploadImage(el, dataUrl));
+    banner('그림을 서버에 올리지 못해서 다른 패드에서는 아직 안 보여요.', '다시 올리기', () => uploadImage(el, dataUrl, mime));
   }
 }
 
