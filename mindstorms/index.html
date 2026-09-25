@@ -150,6 +150,33 @@
     font-family:ui-monospace,Menlo,Consolas,monospace; font-size:11px; line-height:1.45; color:#8fb7ab; white-space:pre-wrap; word-break:break-word; }
   .console:empty::before { content:"허브 메시지가 여기에 표시됩니다…"; color:var(--muted); }
 
+  /* car settings + diagnostics */
+  .field > label small, .row label small { display:block; font-size:11px; font-weight:500; color:var(--muted); margin-top:2px; }
+  select.sel { width:100%; appearance:none; -webkit-appearance:none; background:var(--surface-2); color:var(--text); border:1px solid var(--line);
+    border-radius:10px; padding:11px 36px 11px 12px; font:inherit; font-size:14px; font-weight:700;
+    background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);
+    background-position:calc(100% - 18px) 50%,calc(100% - 13px) 50%; background-size:5px 5px; background-repeat:no-repeat; }
+  .trim { display:flex; align-items:center; gap:12px; }
+  .trim button { width:52px; height:44px; border-radius:12px; border:1px solid var(--line); background:#2a2c36; color:var(--text);
+    font-size:16px; cursor:pointer; touch-action:manipulation; }
+  .trim button:active { background:var(--accent); color:#fff; }
+  .trim output { min-width:56px; text-align:center; font-size:20px; font-weight:800; font-variant-numeric:tabular-nums; }
+  .btn.ghost { background:transparent; border:1px solid var(--line); color:var(--muted); font-size:13px; padding:11px 14px; }
+  .checks { list-style:none; display:flex; flex-direction:column; gap:8px; margin-bottom:14px; }
+  .checks li { display:grid; grid-template-columns:18px 1fr; column-gap:10px; row-gap:2px; align-items:start;
+    background:var(--surface-2); border-radius:10px; padding:10px 12px; font-size:13px; }
+  .checks li > i { width:10px; height:10px; border-radius:50%; background:var(--muted); margin-top:5px; }
+  .checks li.ok > i { background:var(--accent-2); } .checks li.bad > i { background:var(--danger); } .checks li.warn > i { background:#f2c200; }
+  .checks li > b { font-weight:700; }
+  .checks li > em { grid-column:2; font-style:normal; font-size:12px; color:var(--muted); line-height:1.5; word-break:break-all; }
+  .ptest { display:grid; grid-template-columns:28px repeat(3,1fr); gap:6px; align-items:center; margin:10px 0 8px; }
+  .ptest > b { font-size:15px; font-weight:800; text-align:center; }
+  .ptest button { border:1px solid var(--line); background:#2a2c36; color:var(--text); border-radius:10px; padding:10px 4px;
+    font:inherit; font-size:12.5px; font-weight:700; cursor:pointer; touch-action:manipulation; }
+  .ptest button.run { background:var(--accent); color:#fff; border-color:transparent; }
+  .ptest button:disabled:not(.run) { opacity:.45; }
+  .subhead { font-size:13px; font-weight:700; margin:4px 0 2px; }
+
   footer { text-align:center; font-size:11px; color:var(--muted); padding:6px 0 14px; } footer a { color:var(--muted); }
 </style>
 </head>
@@ -209,6 +236,39 @@
 
   <button class="btn stop" id="stopBtn">■ 긴급 정지</button>
 
+  <!-- car settings (M.V.P.) -->
+  <details class="card" id="carCard" style="display:none">
+    <summary>🚗 자동차 설정</summary>
+    <div class="card-body settings-body">
+      <div class="field"><label>구동 모터 (바퀴 굴리기) 포트</label><select class="sel" id="carDrivePort"><option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option><option value="E">E</option><option value="F">F</option></select></div>
+      <div class="row"><label>앞뒤 뒤집기<small>위로 밀었는데 뒤로 가면 켜기</small></label><span class="toggle"><input type="checkbox" id="carInvDrive"><span class="track"></span></span></div>
+      <div class="field"><label>핸들 모터 (방향 꺾기) 포트</label><select class="sel" id="carSteerPort"><option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option><option value="E">E</option><option value="F">F</option></select></div>
+      <div class="row"><label>좌우 뒤집기<small>오른쪽으로 밀었는데 왼쪽으로 꺾이면 켜기</small></label><span class="toggle"><input type="checkbox" id="carInvSteer"><span class="track"></span></span></div>
+      <div class="field"><label>핸들 최대 각도: <span id="steerMaxLabel">40</span>°</label><input type="range" id="steerMax" min="10" max="90" step="5" value="40"></div>
+      <div class="field"><label>핸들 가운데 맞추기<small>허브를 연결한 상태에서 앞바퀴가 똑바로 설 때까지 누르세요. 이 기기에 저장돼요.</small></label>
+        <div class="trim"><button id="trimL" aria-label="핸들 왼쪽으로">◀</button><output id="steerCenterLabel">0°</output><button id="trimR" aria-label="핸들 오른쪽으로">▶</button></div>
+      </div>
+      <button class="btn ghost" id="carReset">처음 설정으로 (E 구동 · F 핸들)</button>
+    </div>
+  </details>
+
+  <!-- diagnostics -->
+  <details class="card" id="diagCard">
+    <summary>🩺 움직이지 않을 때 점검</summary>
+    <div class="card-body">
+      <ul class="checks">
+        <li id="ckConn"><i></i><b>블루투스 연결</b><em></em></li>
+        <li id="ckProg"><i></i><b>허브 수신 프로그램</b><em></em></li>
+        <li id="ckDev"><i></i><b>허브가 찾은 부품</b><em></em></li>
+        <li id="ckCmd"><i></i><b>보내는 명령</b><em></em></li>
+      </ul>
+      <button class="btn ghost" id="restartProg">허브 프로그램 다시 시작 (부품 다시 찾기)</button>
+      <p class="subhead" style="margin-top:14px">포트별 모터 돌려보기</p>
+      <p class="hint">버튼을 누르면 그 포트 모터가 1초 동안 돌아요. 움직인 포트가 실제 모터가 꽂힌 곳이에요. 앞·뒤는 되는데 각도만 안 되면 허브 코드가 예전 버전이에요.</p>
+      <div class="ptest" id="portTest"></div>
+    </div>
+  </details>
+
   <!-- model selector -->
   <div class="hero">
     <div class="model-stage"><img id="modelImg" class="model-img" src="img/blast.jpg" alt="선택한 51515 모델" draggable="false"></div>
@@ -244,14 +304,10 @@
   <details class="card">
     <summary>⚙️ 설정 (속도 · 방향)</summary>
     <div class="card-body settings-body">
-      <div class="row"><label id="invLeftLbl">왼쪽 방향 반전</label><span class="toggle"><input type="checkbox" id="invLeft"><span class="track"></span></span></div>
-      <div class="row"><label id="invRightLbl">오른쪽 방향 반전</label><span class="toggle"><input type="checkbox" id="invRight"><span class="track"></span></span></div>
+      <div class="row" id="rowInvL"><label id="invLeftLbl">왼쪽 방향 반전</label><span class="toggle"><input type="checkbox" id="invLeft"><span class="track"></span></span></div>
+      <div class="row" id="rowInvR"><label id="invRightLbl">오른쪽 방향 반전</label><span class="toggle"><input type="checkbox" id="invRight"><span class="track"></span></span></div>
       <div class="field"><label>최고 속도: <span id="maxSpeedLabel">70</span>%</label><input type="range" id="maxSpeed" min="20" max="100" value="70" step="5"></div>
-      <div id="steerSettings" style="display:none">
-        <div class="field"><label>조향 최대각: <span id="steerMaxLabel">40</span>°</label><input type="range" id="steerMax" min="10" max="90" step="5" value="40"></div>
-        <div class="field"><label>조향 중앙 보정: <span id="steerCenterLabel">0</span>°</label><input type="range" id="steerCenter" min="-90" max="90" step="2" value="0"></div>
-      </div>
-      <p class="hint">구동 모터가 꽂힌 <b>포트</b>는 허브 프로그램의 <b>LEFT_PORT·RIGHT_PORT</b>에서 지정합니다(위 세팅 코드). 두 모터가 마주 보게 조립되면 한쪽을 <b>반전</b>해야 함께 전진합니다. <b>M.V.P.</b>를 고르면 두 토글이 <b>구동 방향 / 조향 방향</b> 반전으로 바뀌고, 아래에 <b>조향 설정</b>이 나타납니다. 핸들이 한쪽으로 쏠려 있으면 <b>중앙 보정</b>으로 바퀴가 똑바로 서게 맞추세요.</p>
+      <p class="hint">구동 모터가 꽂힌 <b>포트</b>는 허브 프로그램의 <b>LEFT_PORT·RIGHT_PORT</b>에서 지정합니다(위 세팅 코드). 두 모터가 마주 보게 조립되면 한쪽을 <b>반전</b>해야 함께 전진합니다. <b>M.V.P.</b>의 포트·방향·핸들은 위쪽 <b>🚗 자동차 설정</b>에서 바꿔요.</p>
     </div>
   </details>
 
@@ -270,8 +326,8 @@
    Cmd/Event:c5f50002-8280-46da-89f4-6d8051e4aeef  (write + notify)
    Commands: StopUserProgram=0, StartUserProgram=1(+progId), WriteStdin=6
    Events:   StatusReport=0, WriteStdout=1
-   The hub runs a small Pybricks program that reads "L R\n" from stdin and
-   drives two motors; this app streams joystick → stdin.                    */
+   The hub runs mindstorm_remote.py (범용판): D/P/T/S 명령을 stdin으로 받고,
+   this app streams joystick → stdin.                    */
 const PB_SERVICE = "c5f50001-8280-46da-89f4-6d8051e4aeef";
 const PB_CHAR    = "c5f50002-8280-46da-89f4-6d8051e4aeef";
 const CMD_STOP = 0, CMD_START = 1, CMD_STDIN = 6;
@@ -472,9 +528,9 @@ while True:
 
 /* ── state ── */
 let device=null, cmdChar=null, connected=false, programRunning=false;
-let busy=false, lastLine="", lastSent=0;
+let busy=false, lastLine="", lastSent=0, testing=false, lastCmd="", lastCmdAt=0, hubDevices=null, stdoutBuf="";
 let want={left:0,right:0,car:false};
-const cfg={ invLeft:false, invRight:false, maxSpeed:70, mode:"tank", steerMax:40, steerCenter:0 };
+const cfg={ invLeft:false, invRight:false, maxSpeed:70, mode:"tank" };
 const INV={ tank:{l:false,r:false}, car:{l:false,r:false} };
 const enc=new TextEncoder(), dec=new TextDecoder();
 
@@ -491,7 +547,10 @@ $("copyCode").onclick = async () => {
 if (navigator.bluetooth) $("webbleWarn").classList.add("hidden");
 
 function setStatus(t,on){ statusText.textContent=t; statusEl.classList.toggle("on",!!on); }
-function logHub(s){ consoleEl.textContent=(consoleEl.textContent+s).slice(-4000); consoleEl.scrollTop=consoleEl.scrollHeight; }
+function logHub(s){ consoleEl.textContent=(consoleEl.textContent+s).slice(-4000); consoleEl.scrollTop=consoleEl.scrollHeight;
+  stdoutBuf=(stdoutBuf+s).slice(-600);
+  const m=stdoutBuf.match(/DEV([^\n]*)\n/); if(m){ hubDevices=m[1].trim().split(/\s+/).filter(Boolean); stdoutBuf=stdoutBuf.slice(stdoutBuf.indexOf(m[0])+m[0].length); }
+}
 
 /* ── connection ── */
 async function connect(){
@@ -521,7 +580,7 @@ async function connect(){
 }
 function onDisconnected(){
   connected=false; cmdChar=null; programRunning=false;
-  want={left:0,right:0}; stickVec=null; for(const k in held) held[k]=false;
+  want={left:0,right:0,car:cfg.mode==="car"}; stickVec=null; hubDevices=null; testing=false; for(const k in held) held[k]=false;
   knob.style.transform="translate(0,0)"; updateTelemetry(0,0);
   setStatus("연결 끊김",false); connectBtn.textContent="🔗 허브 연결";
 }
@@ -552,6 +611,7 @@ async function writeCmd(bytes){
   busy=false;
 }
 async function sendStdin(text){
+  lastCmd=text.trim(); lastCmdAt=Date.now();
   const p=enc.encode(text); const msg=new Uint8Array(1+p.length); msg[0]=CMD_STDIN; msg.set(p,1);
   await writeCmd(msg);
 }
@@ -560,17 +620,28 @@ async function sendStdin(text){
    탱크형: D 속도 회전  (왼쪽=속도+회전, 오른쪽=속도-회전)
    M.V.P.: P E 힘 (뒷바퀴 구동)  +  T F 각도 속도 (앞바퀴 조향)
    정지:   S                                                      */
-const CAR_DRIVE_PORT="E", CAR_STEER_PORT="F";
-function steerAngle(pct){ return Math.round(cfg.steerCenter + pct/100*cfg.steerMax); }
+const CAR_DEFAULT={ drive:"E", steer:"F", invDrive:true, invSteer:true, steerMax:40, steerCenter:0 };   // M.V.P. 조립 기준: 앞뒤·좌우 반전이 기본
+const CAR_KEY="mindstorms-car-v2";
+let CAR={...CAR_DEFAULT};
+try{
+  const saved=JSON.parse(localStorage.getItem(CAR_KEY)||"null");
+  if(saved) CAR={...CAR_DEFAULT,...saved};
+  else { // 이전 버전 설정: 포트·핸들 값은 살리고 방향은 새 기본값(반전)으로
+    const old=JSON.parse(localStorage.getItem("mindstorms-car-v1")||"null");
+    if(old) CAR={...CAR_DEFAULT, drive:old.drive, steer:old.steer, steerMax:old.steerMax, steerCenter:old.steerCenter};
+  }
+}catch(e){}
+function saveCar(){ try{ localStorage.setItem(CAR_KEY, JSON.stringify(CAR)); }catch(e){} }
+function steerAngle(pct){ return Math.round(CAR.steerCenter + pct/100*CAR.steerMax); }
 function driveLines(){
-  if(want.car) return [ "P "+CAR_DRIVE_PORT+" "+Math.round(want.left), "T "+CAR_STEER_PORT+" "+steerAngle(want.right)+" 800" ];
+  if(want.car) return [ "P "+CAR.drive+" "+Math.round(want.left), "T "+CAR.steer+" "+steerAngle(want.right)+" 800" ];
   const sp=Math.round((want.left+want.right)/2), tn=Math.round((want.left-want.right)/2);
   return [ "D "+sp+" "+tn ];
 }
 
 /* ── stream loop: push current drive to hub stdin (on change + heartbeat) ── */
 setInterval(async ()=>{
-  if(!connected || !cmdChar || busy) return;
+  if(!connected || !cmdChar || busy || testing) return;
   const lines = driveLines();
   const key = lines.join("|");
   const now=Date.now();
@@ -586,7 +657,7 @@ function updateTelemetry(l,r){
 }
 async function stopMotors(){
   want.left=0; want.right=0; updateTelemetry(0,0);
-  if(cmdChar){ lastLine=driveLines().join("|"); lastSent=Date.now(); await sendStdin("S\n"); if(want.car) await sendStdin("T "+CAR_STEER_PORT+" "+steerAngle(0)+" 800\n"); }
+  if(cmdChar){ lastLine=driveLines().join("|"); lastSent=Date.now(); await sendStdin("S\n"); if(want.car) await sendStdin("T "+CAR.steer+" "+steerAngle(0)+" 800\n"); }
 }
 
 /* ── input engine (analog stick + D-pad + shoulders + face buttons) ── */
@@ -597,8 +668,8 @@ function setCarDrive(nx,ny){
   const mx=Math.max(Math.abs(nx),Math.abs(ny));   // 원형→사각 매핑: 구동·조향을 독립적으로 끝까지
   if(mx>0){ const k=Math.min(Math.hypot(nx,ny)/mx, 1/mx); nx=Math.max(-1,Math.min(1,nx*k)); ny=Math.max(-1,Math.min(1,ny*k)); }
   want.car=true;
-  want.left=ny*scale*(cfg.invLeft?-1:1);   // 뒷바퀴 구동 (E)
-  want.right=nx*100*(cfg.invRight?-1:1);   // 앞바퀴 조향 (F)
+  want.left=ny*scale*(CAR.invDrive?-1:1);   // 뒷바퀴 구동
+  want.right=nx*100*(CAR.invSteer?-1:1);   // 앞바퀴 조향
   updateTelemetry(ny*scale, nx*100);
 }
 function setDrive(nx,ny){
@@ -658,7 +729,7 @@ const MODELS=[
   {id:"charlie",name:"Charlie",img:"img/charlie.jpg",tip:"두 바퀴로 움직이는 친근한 로봇"},
   {id:"tricky",name:"Tricky",img:"img/tricky.jpg",tip:"트레드와 바퀴로 달리는 스포츠 로봇"},
   {id:"gelo",name:"Gelo",img:"img/gelo.jpg",tip:"네 다리로 기어다니는 크롤러"},
-  {id:"mvp",name:"M.V.P.",img:"img/mvp.jpg",mode:"car",tip:"뒷바퀴 구동(E) · 앞바퀴 조향(F) 자동차"},
+  {id:"mvp",name:"M.V.P.",img:"img/mvp.jpg",mode:"car",tip:"뒷바퀴 구동 + 앞바퀴 조향 자동차"},
 ];
 const modesEl=$("modes"), modelImg=$("modelImg"), modelName=$("modelName"), modelTip=$("modelTip"), scrModel=$("scrModel");
 function selectModel(id){ const m=MODELS.find(x=>x.id===id)||MODELS[0];
@@ -669,22 +740,111 @@ MODELS.forEach(m=>{ const c=document.createElement("button"); c.className="mode-
 selectModel("blast");
 
 /* ── drive mode: tank(좌우 모터) / car(E 뒷바퀴 구동 + F 앞바퀴 조향) ── */
+function carLabels(){
+  if(cfg.mode!=="car") return;
+  $("leftLbl").textContent="뒷바퀴 구동 ("+CAR.drive+")";
+  $("rightLbl").textContent="앞바퀴 조향 ("+CAR.steer+")";
+}
 function applyMode(mode){
   if(cfg.mode!==mode) stopMotors();
   cfg.mode=mode; const car=mode==="car", inv=INV[mode];
   cfg.invLeft=inv.l; cfg.invRight=inv.r;
   $("invLeft").checked=inv.l; $("invRight").checked=inv.r;
-  $("leftLbl").textContent=car?"뒷바퀴 구동 (E)":"왼쪽 모터";
-  $("rightLbl").textContent=car?"앞바퀴 조향 (F)":"오른쪽 모터";
-  $("invLeftLbl").textContent=car?"구동 방향 반전":"왼쪽 방향 반전";
-  $("invRightLbl").textContent=car?"조향 방향 반전":"오른쪽 방향 반전";
+  $("rowInvL").style.display=car?"none":""; $("rowInvR").style.display=car?"none":"";
+  $("leftLbl").textContent="왼쪽 모터"; $("rightLbl").textContent="오른쪽 모터";
   $("btnL").textContent=car?"L ⟲ 좌조향":"L ⟲ 좌회전";
   $("btnR").textContent=car?"R ⟳ 우조향":"R ⟳ 우회전";
-  $("steerSettings").style.display=car?"":"none";
-  want.car=car; recompute();
+  $("carCard").style.display=car?"":"none";
+  if(car) $("carCard").open=true;
+  want.car=car; carLabels(); recompute();
 }
-$("steerMax").oninput=(e)=>{ cfg.steerMax=+e.target.value; $("steerMaxLabel").textContent=cfg.steerMax; recompute(); };
-$("steerCenter").oninput=(e)=>{ cfg.steerCenter=+e.target.value; $("steerCenterLabel").textContent=cfg.steerCenter; recompute(); };
+
+/* ── 자동차 설정 UI ── */
+function renderCar(){
+  $("carDrivePort").value=CAR.drive; $("carSteerPort").value=CAR.steer;
+  $("carInvDrive").checked=CAR.invDrive; $("carInvSteer").checked=CAR.invSteer;
+  $("steerMax").value=CAR.steerMax; $("steerMaxLabel").textContent=CAR.steerMax;
+  $("steerCenterLabel").textContent=CAR.steerCenter+"°";
+  carLabels();
+}
+function carChanged(){ saveCar(); renderCar(); recompute(); lastLine=""; }
+$("carDrivePort").onchange=async (e)=>{ await stopMotors(); CAR.drive=e.target.value; carChanged(); };
+$("carSteerPort").onchange=async (e)=>{ await stopMotors(); CAR.steer=e.target.value; carChanged(); };
+$("carInvDrive").onchange=(e)=>{ CAR.invDrive=e.target.checked; carChanged(); };
+$("carInvSteer").onchange=(e)=>{ CAR.invSteer=e.target.checked; carChanged(); };
+$("steerMax").oninput=(e)=>{ CAR.steerMax=+e.target.value; carChanged(); };
+function trim(d){ CAR.steerCenter=Math.max(-90,Math.min(90,CAR.steerCenter+d)); carChanged(); }
+$("trimL").onclick=()=>trim(-2); $("trimR").onclick=()=>trim(2);
+$("carReset").onclick=async ()=>{ await stopMotors(); CAR={...CAR_DEFAULT}; carChanged(); };
+renderCar();
+
+/* ── 점검: 체크리스트 ── */
+const DEV_NAME={ wheel:"바퀴 모터", motor:"모터", color:"컬러센서", distance:"거리센서" };
+function setCheck(id,state,text){ const li=$(id); li.className=state; li.querySelector("em").textContent=text; }
+function motorPorts(){ return (hubDevices||[]).filter(d=>/:(wheel|motor)$/.test(d)).map(d=>d[0]); }
+function updateChecks(){
+  if(!navigator.bluetooth) setCheck("ckConn","bad","이 브라우저는 블루투스를 못 써요. 맥·갤럭시탭은 Chrome, 아이폰·아이패드는 Bluefy 앱에서 여세요.");
+  else if(!connected) setCheck("ckConn","bad","연결 안 됨 — 위의 ‘허브 연결’을 누르고 Pybricks Hub를 고르세요.");
+  else setCheck("ckConn","ok",(device&&device.name)||"연결됨");
+
+  if(!connected) setCheck("ckProg","","연결하면 확인해요.");
+  else if(programRunning) setCheck("ckProg","ok","실행 중");
+  else setCheck("ckProg","bad","멈춰 있어요. 아래 ‘허브 프로그램 다시 시작’을 누르세요. 그래도 안 되면 Pybricks Code로 코드를 다시 다운로드하세요.");
+
+  if(!hubDevices){ setCheck("ckDev", connected?"warn":"", connected?"아직 목록을 못 받았어요. ‘허브 프로그램 다시 시작’을 누르면 허브가 다시 알려줘요.":"연결하면 확인해요."); }
+  else {
+    const list=hubDevices.map(d=>{ const [p,k]=d.split(":"); return p+" "+(DEV_NAME[k]||k); }).join(" · ")||"아무것도 못 찾았어요";
+    let state="ok", note="";
+    if(cfg.mode==="car"){
+      const mp=motorPorts(), miss=[CAR.drive,CAR.steer].filter(p=>!mp.includes(p));
+      if(miss.length){ state="bad"; note=" — 설정한 "+miss.join("·")+" 포트에 모터가 없어요. 🚗 자동차 설정에서 포트를 바꾸세요."; }
+    } else if(!hubDevices.some(d=>/:wheel$/.test(d))){ state="warn"; note=" — A·B 바퀴 모터를 못 찾았어요. 탱크형은 A·B에 꽂아야 해요."; }
+    setCheck("ckDev",state,list+note);
+  }
+
+  if(!connected) setCheck("ckCmd","","");
+  else if(testing) setCheck("ckCmd","warn","포트 테스트 중: "+lastCmd);
+  else { const age=Date.now()-lastCmdAt; setCheck("ckCmd", age<1000?"ok":"warn", lastCmd? lastCmd+(age<1000?"":" (보내는 중 아님)") : "아직 안 보냈어요"); }
+}
+setInterval(updateChecks,300); updateChecks();
+
+$("restartProg").onclick=async ()=>{
+  if(!ensureReady()) return;
+  hubDevices=null; stdoutBuf="";
+  logHub("[앱] 허브 프로그램 다시 시작…\n");
+  await writeCmd(new Uint8Array([CMD_STOP]));
+  await new Promise(r=>setTimeout(r,600));
+  await writeCmd(new Uint8Array([CMD_START,0]));
+};
+
+/* ── 점검: 포트별 모터 돌려보기 ── */
+const sleep=(ms)=>new Promise(r=>setTimeout(r,ms));
+async function portTest(port,kind,btn){
+  if(!ensureReady()||testing) return;
+  testing=true; btn.classList.add("run");
+  document.querySelectorAll("#portTest button").forEach(b=>b.disabled=true);
+  try{
+    await sendStdin("S\n");
+    if(kind==="angle"){
+      for(const a of [45,-45,0]){ await sendStdin("T "+port+" "+a+" 500\n"); await sleep(700); }
+    } else {
+      const pw=kind==="fwd"?60:-60, end=Date.now()+1000;
+      while(Date.now()<end){ await sendStdin("P "+port+" "+pw+"\n"); await sleep(150); }
+      await sendStdin("P "+port+" 0\n");
+    }
+  } finally {
+    testing=false; lastLine=""; btn.classList.remove("run");
+    document.querySelectorAll("#portTest button").forEach(b=>b.disabled=false);
+  }
+}
+(()=>{ const box=$("portTest");
+  for(const p of "ABCDEF"){
+    const lab=document.createElement("b"); lab.textContent=p; box.appendChild(lab);
+    for(const [k,t] of [["fwd","앞 1초"],["back","뒤 1초"],["angle","각도"]]){
+      const b=document.createElement("button"); b.textContent=t; b.onclick=()=>portTest(p,k,b); box.appendChild(b);
+    }
+  }
+})();
 
 /* ── keyboard ── */
 const KEYMAP={ w:"up",arrowup:"up",s:"down",arrowdown:"down",a:"left",arrowleft:"left",d:"right",arrowright:"right",q:"spinL",e:"spinR"," ":"boost" };
