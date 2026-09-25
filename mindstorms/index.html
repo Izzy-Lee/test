@@ -620,7 +620,7 @@ async function sendStdin(text){
    탱크형: D 속도 회전  (왼쪽=속도+회전, 오른쪽=속도-회전)
    M.V.P.: P E 힘 (뒷바퀴 구동)  +  T F 각도 속도 (앞바퀴 조향)
    정지:   S                                                      */
-const CAR_DEFAULT={ drive:"E", steer:"F", invDrive:true, invSteer:true, steerMax:40, steerCenter:0 };   // M.V.P. 조립 기준: 앞뒤·좌우 반전이 기본
+const CAR_DEFAULT={ drive:"E", steer:"F", invDrive:true, invSteer:true, steerMax:40, steerCenter:0, speed:100 };   // M.V.P. 조립 기준: 앞뒤·좌우 반전이 기본
 const CAR_KEY="mindstorms-car-v2";
 let CAR={...CAR_DEFAULT};
 try{
@@ -717,7 +717,8 @@ function allStop(){ stickVec=null; for(const k in held) held[k]=false; document.
 $("stopBtn").onclick=allStop;
 
 /* ── speed ── */
-function setSpeed(v){ cfg.maxSpeed=Math.max(20,Math.min(100,v)); $("maxSpeed").value=cfg.maxSpeed; $("maxSpeedLabel").textContent=cfg.maxSpeed; $("scrSpeed").textContent=cfg.maxSpeed; recompute(); }
+const TANK_SPEED={ v:70 };
+function setSpeed(v){ cfg.maxSpeed=Math.max(20,Math.min(100,v)); if(cfg.mode==="car"){ if(CAR.speed!==cfg.maxSpeed){ CAR.speed=cfg.maxSpeed; saveCar(); } } else TANK_SPEED.v=cfg.maxSpeed; $("maxSpeed").value=cfg.maxSpeed; $("maxSpeedLabel").textContent=cfg.maxSpeed; $("scrSpeed").textContent=cfg.maxSpeed; recompute(); }
 $("btnMinus").onclick=()=>setSpeed(cfg.maxSpeed-10); $("btnPlus").onclick=()=>setSpeed(cfg.maxSpeed+10);
 $("maxSpeed").oninput=(e)=>setSpeed(+e.target.value);
 $("invLeft").onchange=(e)=>{cfg.invLeft=INV[cfg.mode].l=e.target.checked; recompute();};
@@ -756,7 +757,7 @@ function applyMode(mode){
   $("btnR").textContent=car?"R ⟳ 우조향":"R ⟳ 우회전";
   $("carCard").style.display=car?"":"none";
   if(car) $("carCard").open=true;
-  want.car=car; carLabels(); recompute();
+  want.car=car; carLabels(); setSpeed(car?CAR.speed:TANK_SPEED.v);
 }
 
 /* ── 자동차 설정 UI ── */
@@ -775,7 +776,7 @@ $("carInvSteer").onchange=(e)=>{ CAR.invSteer=e.target.checked; carChanged(); };
 $("steerMax").oninput=(e)=>{ CAR.steerMax=+e.target.value; carChanged(); };
 function trim(d){ CAR.steerCenter=Math.max(-90,Math.min(90,CAR.steerCenter+d)); carChanged(); }
 $("trimL").onclick=()=>trim(-2); $("trimR").onclick=()=>trim(2);
-$("carReset").onclick=async ()=>{ await stopMotors(); CAR={...CAR_DEFAULT}; carChanged(); };
+$("carReset").onclick=async ()=>{ await stopMotors(); CAR={...CAR_DEFAULT}; carChanged(); if(cfg.mode==="car") setSpeed(CAR.speed); };
 renderCar();
 
 /* ── 점검: 체크리스트 ── */
