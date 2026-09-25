@@ -164,37 +164,6 @@
 </header>
 
 <main>
-  <!-- model selector -->
-  <div class="hero">
-    <div class="model-stage"><img id="modelImg" class="model-img" src="img/blast.jpg" alt="선택한 51515 모델" draggable="false"></div>
-    <div class="cap"><b id="modelName">Blast</b> · <span id="modelTip">두 다리 밑 바퀴로 주행하는 대형 휴머노이드</span></div>
-    <div class="modes" id="modes"></div>
-  </div>
-
-  <div class="banner" id="webbleWarn">
-    <b>⚠️ 이 브라우저는 Web Bluetooth 미지원</b><br>
-    <b>맥북/PC·갤럭시탭</b> → <b>Chrome</b>으로 여세요. <b>아이폰/아이패드</b> → App Store <b>Bluefy</b> 앱 안에서 이 페이지를 여세요.
-  </div>
-
-  <!-- one-time setup -->
-  <details class="card" id="setupCard" open>
-    <summary>🔧 처음 1회 세팅 (허브 준비)</summary>
-    <div class="card-body">
-      <ol class="steps">
-        <li><b>Pybricks 펌웨어 설치.</b> 컴퓨터/갤럭시탭 <b>크롬</b>에서 <a href="https://code.pybricks.com" target="_blank" rel="noopener">code.pybricks.com</a> 접속 → 화면 안내대로 51515 허브에 Pybricks 설치. LEGO 앱으로 <b>언제든 원래 펌웨어 복구</b> 가능합니다.</li>
-        <li><b>수신 프로그램 올리기.</b> Pybricks Code 편집기에 아래 코드를 붙여넣고, 구동 모터가 꽂힌 포트에 맞게 <span class="port">LEFT_PORT</span>·<span class="port">RIGHT_PORT</span>만 수정한 뒤 <b>▶(다운로드/실행)</b>. 한 번 다운로드하면 허브에 저장됩니다.
-          <div class="codewrap">
-            <button class="copybtn" id="copyCode">복사</button>
-            <pre class="code" id="hubCode"></pre>
-          </div>
-        </li>
-        <li><b>Pybricks Code 연결 해제.</b> 블루투스는 한 번에 한 곳만 연결됩니다. Pybricks Code에서 허브 연결을 끊으세요.</li>
-        <li><b>이 앱에서 연결.</b> 아래 <b>‘허브 연결’</b> → 목록에서 <b>Pybricks Hub</b> 선택. 연결되면 저장된 수신 프로그램이 자동 실행됩니다.</li>
-        <li><b>주행!</b> 컨트롤러로 운전하세요. 앞으로 안 가고 회전만 하면 <b>설정 → 방향 반전</b> 토글을 바꾸면 됩니다.</li>
-      </ol>
-    </div>
-  </details>
-
   <button class="btn btn-primary" id="connectBtn">🔗 허브 연결</button>
 
   <!-- gamepad -->
@@ -234,19 +203,51 @@
   </div>
 
   <div class="telemetry">
-    <div class="tcard"><div class="lbl">왼쪽 모터</div><div class="val"><span id="leftVal">0</span><small>%</small></div><div class="bar"><i id="leftBar"></i></div></div>
-    <div class="tcard"><div class="lbl">오른쪽 모터</div><div class="val"><span id="rightVal">0</span><small>%</small></div><div class="bar"><i id="rightBar"></i></div></div>
+    <div class="tcard"><div class="lbl" id="leftLbl">왼쪽 모터</div><div class="val"><span id="leftVal">0</span><small>%</small></div><div class="bar"><i id="leftBar"></i></div></div>
+    <div class="tcard"><div class="lbl" id="rightLbl">오른쪽 모터</div><div class="val"><span id="rightVal">0</span><small>%</small></div><div class="bar"><i id="rightBar"></i></div></div>
   </div>
 
   <button class="btn stop" id="stopBtn">■ 긴급 정지</button>
 
+  <!-- model selector -->
+  <div class="hero">
+    <div class="model-stage"><img id="modelImg" class="model-img" src="img/blast.jpg" alt="선택한 51515 모델" draggable="false"></div>
+    <div class="cap"><b id="modelName">Blast</b> · <span id="modelTip">두 다리 밑 바퀴로 주행하는 대형 휴머노이드</span></div>
+    <div class="modes" id="modes"></div>
+  </div>
+
+  <div class="banner" id="webbleWarn">
+    <b>⚠️ 이 브라우저는 Web Bluetooth 미지원</b><br>
+    <b>맥북/PC·갤럭시탭</b> → <b>Chrome</b>으로 여세요. <b>아이폰/아이패드</b> → App Store <b>Bluefy</b> 앱 안에서 이 페이지를 여세요.
+  </div>
+
+  <!-- one-time setup -->
+  <details class="card" id="setupCard" open>
+    <summary>🔧 처음 1회 세팅 (허브 준비)</summary>
+    <div class="card-body">
+      <ol class="steps">
+        <li><b>Pybricks 펌웨어 설치.</b> 컴퓨터/갤럭시탭 <b>크롬</b>에서 <a href="https://code.pybricks.com" target="_blank" rel="noopener">code.pybricks.com</a> 접속 → 화면 안내대로 51515 허브에 Pybricks 설치. LEGO 앱으로 <b>언제든 원래 펌웨어 복구</b> 가능합니다.</li>
+        <li><b>수신 프로그램 올리기.</b> Pybricks Code 편집기에 아래 코드를 붙여넣고, 구동 모터가 꽂힌 포트에 맞게 <span class="port">LEFT_PORT</span>·<span class="port">RIGHT_PORT</span>만 수정한 뒤 <b>▶(다운로드/실행)</b>. <b>M.V.P.</b>는 <span class="port">E</span>=뒷바퀴 구동, <span class="port">F</span>=앞바퀴 조향으로 설정돼 있어요(첫 주행 때 조향 모터가 양끝을 한 번 찍고 중앙을 자동으로 맞춥니다). 한 번 다운로드하면 허브에 저장됩니다.
+          <div class="codewrap">
+            <button class="copybtn" id="copyCode">복사</button>
+            <pre class="code" id="hubCode"></pre>
+          </div>
+        </li>
+        <li><b>Pybricks Code 연결 해제.</b> 블루투스는 한 번에 한 곳만 연결됩니다. Pybricks Code에서 허브 연결을 끊으세요.</li>
+        <li><b>이 앱에서 연결.</b> 아래 <b>‘허브 연결’</b> → 목록에서 <b>Pybricks Hub</b> 선택. 연결되면 저장된 수신 프로그램이 자동 실행됩니다.</li>
+        <li><b>주행!</b> 컨트롤러로 운전하세요. 앞으로 안 가고 회전만 하면 <b>설정 → 방향 반전</b> 토글을 바꾸면 됩니다.</li>
+      </ol>
+    </div>
+  </details>
+
+
   <details class="card">
     <summary>⚙️ 설정 (속도 · 방향)</summary>
     <div class="card-body settings-body">
-      <div class="row"><label>왼쪽 방향 반전</label><span class="toggle"><input type="checkbox" id="invLeft"><span class="track"></span></span></div>
-      <div class="row"><label>오른쪽 방향 반전</label><span class="toggle"><input type="checkbox" id="invRight" checked><span class="track"></span></span></div>
+      <div class="row"><label id="invLeftLbl">왼쪽 방향 반전</label><span class="toggle"><input type="checkbox" id="invLeft"><span class="track"></span></span></div>
+      <div class="row"><label id="invRightLbl">오른쪽 방향 반전</label><span class="toggle"><input type="checkbox" id="invRight" checked><span class="track"></span></span></div>
       <div class="field"><label>최고 속도: <span id="maxSpeedLabel">70</span>%</label><input type="range" id="maxSpeed" min="20" max="100" value="70" step="5"></div>
-      <p class="hint">구동 모터가 꽂힌 <b>포트</b>는 허브 프로그램의 <b>LEFT_PORT·RIGHT_PORT</b>에서 지정합니다(위 세팅 코드). 두 모터가 마주 보게 조립되면 한쪽을 <b>반전</b>해야 함께 전진합니다.</p>
+      <p class="hint">구동 모터가 꽂힌 <b>포트</b>는 허브 프로그램의 <b>LEFT_PORT·RIGHT_PORT</b>에서 지정합니다(위 세팅 코드). 두 모터가 마주 보게 조립되면 한쪽을 <b>반전</b>해야 함께 전진합니다. <b>M.V.P.</b>를 고르면 두 토글이 <b>구동 방향 / 조향 방향</b> 반전으로 바뀝니다(E·F 포트는 <b>DRIVE_PORT·STEER_PORT</b>).</p>
     </div>
   </details>
 
@@ -280,15 +281,59 @@ from pybricks.tools import wait, StopWatch
 from usys import stdin
 from uselect import poll
 
-# === 구동 모터 포트 (조립에 맞게 수정) ===
+# === 탱크형(Blast·Charlie·Tricky·Gelo) 구동 모터 포트 ===
 LEFT_PORT = Port.A
 RIGHT_PORT = Port.B
 
-hub = PrimeHub()
-left = Motor(LEFT_PORT)
-right = Motor(RIGHT_PORT)
-hub.light.on(Color.GREEN)
+# === 자동차형(M.V.P.) 포트 ===
+DRIVE_PORT = Port.E   # 뒷바퀴 구동
+STEER_PORT = Port.F   # 앞바퀴 좌우 조향
+STEER_AUTO_CENTER = True   # 첫 주행 때 양끝을 찍고 중앙 자동 보정
+STEER_MAX = 40             # 자동 보정을 끈 경우 최대 조향각(도)
 
+hub = PrimeHub()
+
+def try_motor(port):
+    try:
+        return Motor(port)
+    except OSError:
+        return None
+
+left = try_motor(LEFT_PORT)
+right = try_motor(RIGHT_PORT)
+drive = try_motor(DRIVE_PORT)
+steer = try_motor(STEER_PORT)
+steer_max = STEER_MAX
+steer_ready = False
+
+def clamp(v):
+    return max(-100, min(100, int(v)))
+
+def setup_steer():
+    global steer_max, steer_ready
+    if steer_ready or not steer:
+        return
+    if STEER_AUTO_CENTER:
+        hub.light.on(Color.YELLOW)
+        lo = steer.run_until_stalled(-300, duty_limit=40)
+        hi = steer.run_until_stalled(300, duty_limit=40)
+        steer.run_target(300, (lo + hi) // 2)
+        steer.reset_angle(0)
+        steer_max = int(abs(hi - lo) / 2 * 0.85)
+        print("steer max:", steer_max)
+    else:
+        steer.reset_angle(0)
+    steer_ready = True
+    hub.light.on(Color.GREEN)
+
+def stop_all():
+    for m in (left, right, drive):
+        if m:
+            m.dc(0)
+    if steer and steer_ready:
+        steer.track_target(0)
+
+hub.light.on(Color.GREEN)
 keys = poll()
 keys.register(stdin)
 buf = b""
@@ -300,22 +345,33 @@ while True:
     while b"\\n" in buf:
         line, _, buf = buf.partition(b"\\n")
         try:
-            a, b2 = line.split()
-            left.dc(max(-100, min(100, int(a))))
-            right.dc(max(-100, min(100, int(b2))))
+            p = line.split()
+            if p[0] == b"C":
+                # 자동차 모드: C <구동%> <조향%>
+                setup_steer()
+                if drive:
+                    drive.dc(clamp(p[1]))
+                if steer:
+                    steer.track_target(clamp(p[2]) * steer_max // 100)
+            else:
+                # 탱크 모드: <왼쪽%> <오른쪽%>
+                if left:
+                    left.dc(clamp(p[0]))
+                if right:
+                    right.dc(clamp(p[1]))
             watch.reset()
         except:
             pass
     if watch.time() > 400:
-        left.dc(0)
-        right.dc(0)
+        stop_all()
     wait(10)`;
 
 /* ── state ── */
 let device=null, cmdChar=null, connected=false, programRunning=false;
 let busy=false, lastLine="", lastSent=0;
-let want={left:0,right:0};
-const cfg={ invLeft:false, invRight:true, maxSpeed:70 };
+let want={left:0,right:0,car:false};
+const cfg={ invLeft:false, invRight:true, maxSpeed:70, mode:"tank" };
+const INV={ tank:{l:false,r:true}, car:{l:false,r:false} };
 const enc=new TextEncoder(), dec=new TextDecoder();
 
 const $=(id)=>document.getElementById(id);
@@ -399,7 +455,7 @@ async function sendStdin(text){
 /* ── stream loop: push current drive to hub stdin (on change + heartbeat) ── */
 setInterval(async ()=>{
   if(!connected || !cmdChar || busy) return;
-  const line = Math.round(want.left)+" "+Math.round(want.right);
+  const line = (want.car?"C ":"")+Math.round(want.left)+" "+Math.round(want.right);
   const now=Date.now();
   if(line!==lastLine || now-lastSent>200){ lastLine=line; lastSent=now; await sendStdin(line+"\n"); }
 }, 50);
@@ -413,13 +469,24 @@ function updateTelemetry(l,r){
 }
 async function stopMotors(){
   want.left=0; want.right=0; updateTelemetry(0,0);
-  if(cmdChar){ lastLine="0 0"; lastSent=Date.now(); await sendStdin("0 0\n"); }
+  if(cmdChar){ const z=want.car?"C 0 0":"0 0"; lastLine=z; lastSent=Date.now(); await sendStdin(z+"\n"); }
 }
 
 /* ── input engine (analog stick + D-pad + shoulders + face buttons) ── */
 const held={ up:false,down:false,left:false,right:false,spinL:false,spinR:false,fwd:false,back:false,boost:false };
 let stickVec=null;
+function setCarDrive(nx,ny){
+  const scale=held.boost?100:cfg.maxSpeed;
+  const mx=Math.max(Math.abs(nx),Math.abs(ny));   // 원형→사각 매핑: 구동·조향을 독립적으로 끝까지
+  if(mx>0){ const k=Math.min(Math.hypot(nx,ny)/mx, 1/mx); nx=Math.max(-1,Math.min(1,nx*k)); ny=Math.max(-1,Math.min(1,ny*k)); }
+  want.car=true;
+  want.left=ny*scale*(cfg.invLeft?-1:1);   // 뒷바퀴 구동 (E)
+  want.right=nx*100*(cfg.invRight?-1:1);   // 앞바퀴 조향 (F)
+  updateTelemetry(ny*scale, nx*100);
+}
 function setDrive(nx,ny){
+  if(cfg.mode==="car") return setCarDrive(nx,ny);
+  want.car=false;
   const scale=held.boost?100:cfg.maxSpeed;
   let l=ny+nx, r=ny-nx; const m=Math.max(1,Math.abs(l),Math.abs(r)); l/=m; r/=m;
   want.left=l*scale*(cfg.invLeft?-1:1); want.right=r*scale*(cfg.invRight?-1:1);
@@ -465,8 +532,8 @@ $("stopBtn").onclick=allStop;
 function setSpeed(v){ cfg.maxSpeed=Math.max(20,Math.min(100,v)); $("maxSpeed").value=cfg.maxSpeed; $("maxSpeedLabel").textContent=cfg.maxSpeed; $("scrSpeed").textContent=cfg.maxSpeed; recompute(); }
 $("btnMinus").onclick=()=>setSpeed(cfg.maxSpeed-10); $("btnPlus").onclick=()=>setSpeed(cfg.maxSpeed+10);
 $("maxSpeed").oninput=(e)=>setSpeed(+e.target.value);
-$("invLeft").onchange=(e)=>{cfg.invLeft=e.target.checked; recompute();};
-$("invRight").onchange=(e)=>{cfg.invRight=e.target.checked; recompute();};
+$("invLeft").onchange=(e)=>{cfg.invLeft=INV[cfg.mode].l=e.target.checked; recompute();};
+$("invRight").onchange=(e)=>{cfg.invRight=INV[cfg.mode].r=e.target.checked; recompute();};
 
 /* ── model selector ── */
 const MODELS=[
@@ -474,15 +541,30 @@ const MODELS=[
   {id:"charlie",name:"Charlie",img:"img/charlie.jpg",tip:"두 바퀴로 움직이는 친근한 로봇"},
   {id:"tricky",name:"Tricky",img:"img/tricky.jpg",tip:"트레드와 바퀴로 달리는 스포츠 로봇"},
   {id:"gelo",name:"Gelo",img:"img/gelo.jpg",tip:"네 다리로 기어다니는 크롤러"},
-  {id:"mvp",name:"M.V.P.",img:"img/mvp.jpg",tip:"네 바퀴 차량형 모델"},
+  {id:"mvp",name:"M.V.P.",img:"img/mvp.jpg",mode:"car",tip:"뒷바퀴 구동(E) · 앞바퀴 조향(F) 자동차"},
 ];
 const modesEl=$("modes"), modelImg=$("modelImg"), modelName=$("modelName"), modelTip=$("modelTip"), scrModel=$("scrModel");
 function selectModel(id){ const m=MODELS.find(x=>x.id===id)||MODELS[0];
-  modelImg.src=m.img; modelImg.alt=m.name+" 모델"; modelName.textContent=m.name; modelTip.textContent=m.tip; scrModel.textContent=m.name;
+  modelImg.src=m.img; modelImg.alt=m.name+" 모델"; modelName.textContent=m.name; modelTip.textContent=m.tip; scrModel.textContent=m.name; applyMode(m.mode||"tank");
   [...modesEl.children].forEach(c=>c.classList.toggle("sel", c.dataset.id===id)); }
 MODELS.forEach(m=>{ const c=document.createElement("button"); c.className="mode-chip"; c.dataset.id=m.id;
   c.innerHTML=`<img src="${m.img}" alt="${m.name}"><span>${m.name}</span>`; c.onclick=()=>selectModel(m.id); modesEl.appendChild(c); });
 selectModel("blast");
+
+/* ── drive mode: tank(좌우 모터) / car(E 뒷바퀴 구동 + F 앞바퀴 조향) ── */
+function applyMode(mode){
+  if(cfg.mode!==mode) stopMotors();
+  cfg.mode=mode; const car=mode==="car", inv=INV[mode];
+  cfg.invLeft=inv.l; cfg.invRight=inv.r;
+  $("invLeft").checked=inv.l; $("invRight").checked=inv.r;
+  $("leftLbl").textContent=car?"뒷바퀴 구동 (E)":"왼쪽 모터";
+  $("rightLbl").textContent=car?"앞바퀴 조향 (F)":"오른쪽 모터";
+  $("invLeftLbl").textContent=car?"구동 방향 반전":"왼쪽 방향 반전";
+  $("invRightLbl").textContent=car?"조향 방향 반전":"오른쪽 방향 반전";
+  $("btnL").textContent=car?"L ⟲ 좌조향":"L ⟲ 좌회전";
+  $("btnR").textContent=car?"R ⟳ 우조향":"R ⟳ 우회전";
+  want.car=car; recompute();
+}
 
 /* ── keyboard ── */
 const KEYMAP={ w:"up",arrowup:"up",s:"down",arrowdown:"down",a:"left",arrowleft:"left",d:"right",arrowright:"right",q:"spinL",e:"spinR"," ":"boost" };
@@ -491,7 +573,7 @@ window.addEventListener("keyup",(e)=>{ const k=e.key.toLowerCase(); const key=KE
 
 /* ── safety ── */
 document.addEventListener("visibilitychange",()=>{ if(document.hidden && connected) stopMotors(); });
-window.addEventListener("pagehide",()=>{ if(cmdChar){ try{ cmdChar.writeValue(new Uint8Array([CMD_STDIN,48,32,48,10])); }catch(e){} } }); // "0 0\n"
+window.addEventListener("pagehide",()=>{ if(cmdChar){ try{ cmdChar.writeValue(new Uint8Array(want.car?[CMD_STDIN,67,32,48,32,48,10]:[CMD_STDIN,48,32,48,10])); }catch(e){} } }); // "0 0\n" / 자동차 모드 "C 0 0\n"
 </script>
 </body>
 </html>
