@@ -214,7 +214,7 @@
         </div>
       </div>
       <div class="cluster center">
-        <div class="screen"><div class="scr-model" id="scrModel">Blast</div><div class="scr-speed"><span id="scrSpeed">70</span><small>%</small></div></div>
+        <div class="screen"><div class="scr-model" id="scrModel">M.V.P.</div><div class="scr-speed"><span id="scrSpeed">100</span><small>%</small></div></div>
         <div class="minus-plus"><button id="btnMinus" title="속도 -">−</button><button id="btnPlus" title="속도 +">＋</button></div>
       </div>
       <div class="cluster">
@@ -271,8 +271,8 @@
 
   <!-- model selector -->
   <div class="hero">
-    <div class="model-stage"><img id="modelImg" class="model-img" src="img/blast.jpg" alt="선택한 51515 모델" draggable="false"></div>
-    <div class="cap"><b id="modelName">Blast</b> · <span id="modelTip">두 다리 밑 바퀴로 주행하는 대형 휴머노이드</span></div>
+    <div class="model-stage"><img id="modelImg" class="model-img" src="img/mvp.jpg" alt="선택한 51515 모델" draggable="false"></div>
+    <div class="cap"><b id="modelName">M.V.P.</b> · <span id="modelTip">뒷바퀴 구동 + 앞바퀴 조향 자동차</span></div>
     <div class="modes" id="modes"></div>
   </div>
 
@@ -738,7 +738,7 @@ function selectModel(id){ const m=MODELS.find(x=>x.id===id)||MODELS[0];
   [...modesEl.children].forEach(c=>c.classList.toggle("sel", c.dataset.id===id)); }
 MODELS.forEach(m=>{ const c=document.createElement("button"); c.className="mode-chip"; c.dataset.id=m.id;
   c.innerHTML=`<img src="${m.img}" alt="${m.name}"><span>${m.name}</span>`; c.onclick=()=>selectModel(m.id); modesEl.appendChild(c); });
-selectModel("blast");
+selectModel("mvp");
 
 /* ── drive mode: tank(좌우 모터) / car(E 뒷바퀴 구동 + F 앞바퀴 조향) ── */
 function carLabels(){
